@@ -24,7 +24,7 @@ Requirements:
 ***********************************/
 const gameBoard = (function () {
   let board = [];
-  let boardSize = 3;
+  let size = 3;
   let boardString = "";
 
   // This builds tiles that make up the board.
@@ -43,14 +43,15 @@ const gameBoard = (function () {
       build,
     }
   }
+
   // Builds the board, storing relevant data of each tile inside an array.
   //   Data such as player marker, index of the tile (row/column).
-  function buildBoard(size) {
+  function build(boardSize) {
     let tiles = [];
     let index = 0;
-    for (let i = 0; i < size; i++) {
+    for (let i = 0; i < boardSize; i++) {
       let row = [];
-      for (let j = 0; j < size; j++) {
+      for (let j = 0; j < boardSize; j++) {
         const rowIndex = i;
         const colIndex = j;
 
@@ -70,29 +71,29 @@ const gameBoard = (function () {
     return tiles;
   }
 
-  function init(size = 3) {
-    boardSize = size;
-    const builtBoard = buildBoard(size);
+  function init(boardSize = 3) {
+    size = boardSize;
+    const builtBoard = build(size);
     board.push(...builtBoard);
   }
 
   function getSize() {
-    console.log(`Board is ${boardSize} by ${boardSize}`);
+    console.log(`Board is ${size} by ${size}`);
   }
 
   // Render the board as a string that displays each tile in rows & columns.
   //   Attaches a numbering system for readability.
-  function displayBoard() {
+  function render() {
     boardString = " ";
-    for (let i = 0; i < boardSize; i++) {
+    for (let i = 0; i < size; i++) {
       boardString += ` ${i}|`; // Number columns
     }
 
     boardString += `\n`;
 
-    for (let i = 0; i < boardSize; i++) {
+    for (let i = 0; i < size; i++) {
       boardString += `${i}-`; // Number rows
-      for (let j = 0; j < boardSize; j++) {
+      for (let j = 0; j < size; j++) {
         boardString += `[${board[i][j].marker}]`;
       }
       boardString += `\n`
@@ -101,16 +102,16 @@ const gameBoard = (function () {
     return boardString;
   }
 
-  function updateBoard(player, row, col) {
+  function update(player, row, col) {
     board[row][col] = player;
-    buildBoard(boardSize);
+    build(size);
   }
 
   return {
     init,
     getSize,
-    displayBoard,
-    updateBoard,
+    render,
+    update,
   }
 })();
 
@@ -140,7 +141,8 @@ const gameState = (function () {
   }
 
   const playTurn = function (player, row, col) {
-    board.updateBoard(player, row, col);
+    board.update(player, row, col);
+    console.log(board.render());
   }
 
   return {
@@ -175,8 +177,6 @@ const karma = playerFactory('o', 'Karma');
 gameState.addPlayers(hunter, karma);
 gameState.attachBoard(gameBoard);
 
-console.log(gameBoard.displayBoard());
+console.log(gameBoard.render());
 gameState.playTurn(hunter, 1, 1);
-console.log(gameBoard.displayBoard());
 gameState.playTurn(karma, 0, 0);
-console.log(gameBoard.displayBoard());
