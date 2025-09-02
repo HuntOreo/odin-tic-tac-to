@@ -73,8 +73,15 @@ const gameBoard = (function () {
   }
 
   function displayBoard() {
-    boardString = "";
+    boardString = " ";
     for (let i = 0; i < boardSize; i++) {
+      boardString += ` ${i}|`;
+    }
+
+    boardString += `\n`;
+
+    for (let i = 0; i < boardSize; i++) {
+      boardString += `${i}-`
       for (let j = 0; j < boardSize; j++) {
         boardString += `[${board[i][j].marker}]`;
       }
@@ -82,6 +89,13 @@ const gameBoard = (function () {
     }
 
     return boardString;
+  }
+
+  function updateBoard(marker, row, col) {
+    // recieve marker, and index's of the tile that will be updated.
+    // after tile is updated, rebuild board data and string.
+
+
   }
 
   return {
@@ -131,9 +145,9 @@ const playerFactory = function (playerMarker, playerName) {
   }
 }
 
-gameBoard.init();
+gameBoard.init(10);
 const hunter = playerFactory('x', 'Hunter');
-const karma = playerFactory('o', 'Karma')
+const karma = playerFactory('o', 'Karma');
 
 gameState.addPlayers(hunter, karma);
 console.log(gameState.getPlayers());
