@@ -202,6 +202,18 @@ const gameState = (function () {
   const winState = (function () {
     let current;
 
+    const getState = function (board) {
+      const gameboard = board.get();
+      const size = board.getSize();
+      const player = getPlayer();
+
+      return {
+        gameboard,
+        size,
+        player,
+      }
+    }
+
     const setPlayer = function (player) {
       current = player;
     }
@@ -210,26 +222,37 @@ const gameState = (function () {
       return current;
     }
 
-    const row = function (board, row) {
-      const gameboard = board.get();
-      const size = board.getSize();
-      const candidate = gameboard[row];
-      const player = getPlayer();
+    const checkTiles = function (tiles, state) {
       let score = 0;
-
-      for (tile of candidate) {
-        if (tile.player.marker === player.marker) {
+      for (tile of tiles) {
+        if (tile.player.marker === state.player.marker) {
           score++;
         }
       }
 
-      console.log(size);
-      if (score === size) {
-        console.log('Winner');
+      if (score === state.size) {
+        return console.log(`${state.player.name} wins!`);
       }
     }
 
-    const col = function () {
+    const row = function (board, row) {
+      const state = getState(board);
+      const { gameboard } = state;
+      const candidate = gameboard[row];
+
+      checkTiles(candidate, state);
+    }
+
+    const col = function (board, row, col) {
+      const state = getState(board);
+      const { gameboard, size } = state;
+      const candidate = [];
+
+      for (let i = 0; i < size; i++) {
+        candidate.push(gameboard[i][col]);
+      }
+
+      checkTiles(candidate, state);
 
     }
 
@@ -243,6 +266,7 @@ const gameState = (function () {
 
     const check = function (board, rowIndex, colIndex) {
       row(board, rowIndex);
+      col(board, rowIndex, colIndex);
       return 'checked';
     }
 
@@ -262,7 +286,7 @@ const gameState = (function () {
   }
 })();
 
-
+// Play Game
 gameBoard.init(4);
 
 const hunter = playerFactory('x', 'Hunter');
@@ -272,12 +296,12 @@ gameState.addPlayers(hunter, karma);
 gameState.attachBoard(gameBoard);
 
 gameState.start();
-gameState.playTurn(1, 0);
-gameState.playTurn(0, 2);
-gameState.playTurn(1, 1);
-gameState.playTurn(2, 1);
+gameState.playTurn(0, 0);
 gameState.playTurn(1, 2);
-gameState.playTurn(0, 3);
+gameState.playTurn(1, 0);
+gameState.playTurn(2, 1);
+gameState.playTurn(2, 0);
 gameState.playTurn(1, 3);
+gameState.playTurn(3, 0);
 
 
