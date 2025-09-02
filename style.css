@@ -1,0 +1,9 @@
+@font-face {
+  font-family: "NatoSans";
+  src: url('./misc/fonts/NatoSans.ttf') format('truetype');
+}
+
+body {
+  font-family: "NatoSans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
