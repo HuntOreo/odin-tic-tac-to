@@ -89,8 +89,45 @@ const gameBoard = (function () {
     getSize,
     displayBoard,
   }
-})()
+})();
+
+const gameState = (function () {
+  let players = [];
+
+  const getPlayers = function () {
+    return players;
+  }
+
+  const addPlayers = function (...playersArg) {
+    for (player of playersArg) {
+      players.push(player);
+    }
+  }
+
+  return {
+    getPlayers,
+    addPlayers,
+  }
+})();
+
+const playerFactory = function (playerMarker, playerName) {
+  const marker = playerMarker;
+  const name = playerName;
+
+  return {
+    marker,
+    name,
+  }
+}
 
 gameBoard.init();
-gameBoard.getSize();
+const hunter = playerFactory('x', 'Hunter');
+const karma = playerFactory('o', 'Karma')
+
+gameState.addPlayers(hunter, karma);
+console.log(gameState.getPlayers());
+
+console.log(hunter.name);
+console.log(karma.name);
+
 console.log(gameBoard.displayBoard());
