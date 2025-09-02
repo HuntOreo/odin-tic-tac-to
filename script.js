@@ -132,6 +132,7 @@ const gameState = (function () {
   // Gamestate managemant
   const start = function () {
     setCurrentPlayer(players[0], false);
+    console.log(board.render());
   }
 
   const setCurrentPlayer = function (player, nextTurnFlag) {
@@ -140,9 +141,8 @@ const gameState = (function () {
       players.findIndex((child, index) => {
         if(child.id == player.id)
         playerIndex = index;
-      })
+      });
       if (playerIndex >= players.length-1) {
-        console.log(playerIndex);
         currentPlayer = {...players[0]};
       } else {
         currentPlayer = {...players[playerIndex+1]};
@@ -193,13 +193,11 @@ const karma = playerFactory('o', 'Karma');
 
 gameState.addPlayers(hunter, karma);
 gameState.attachBoard(gameBoard);
-gameState.start();
 
-console.log(gameBoard.render());
+gameState.start();
 gameState.playTurn(1, 1);
 gameState.playTurn(0, 0);
 gameState.playTurn(2, 1);
-gameState.playTurn(1, 1);
 gameState.playTurn(2, 0);
 gameState.playTurn(0, 1);
 gameState.playTurn(2, 2);
