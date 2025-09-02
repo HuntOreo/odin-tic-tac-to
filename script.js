@@ -159,6 +159,11 @@ const gameState = (function () {
 
   }
 
+  /*
+    Check if tile is already filled
+    Check for winning move
+  */
+
   return {
     getPlayers,
     addPlayers,
@@ -201,4 +206,3 @@ gameState.playTurn(2, 1);
 gameState.playTurn(2, 0);
 gameState.playTurn(0, 1);
 gameState.playTurn(2, 2);
-
