@@ -32,6 +32,10 @@ const gameBoard = (function () {
     }
   }
 
+  const get = function () {
+    return board;
+  }
+
   // Builds the board, storing relevant data of each tile inside an array.
   //   Data such as player marker, index of the tile (row/column).
   function build(boardSize) {
@@ -65,11 +69,11 @@ const gameBoard = (function () {
     board.push(...builtBoard);
   }
 
-  function getSize() {
-    console.log(`Board is ${size} by ${size}`);
+  function boardSize() {
+    console.log(`${size}x${size}`);
   }
 
-  // Render the board as a string that displays each tile in rows & columns.
+  // Render the board as a string.
   //   Attaches a numbering system for readability.
   function render() {
     boardString = " ";
@@ -82,7 +86,7 @@ const gameBoard = (function () {
     for (let i = 0; i < size; i++) {
       boardString += `${i}-`; // Number rows
       for (let j = 0; j < size; j++) {
-        boardString += `[${board[i][j].marker}]`;
+        boardString += `[${board[i][j].player.marker}]`;
       }
       boardString += `\n`
     }
@@ -91,13 +95,14 @@ const gameBoard = (function () {
   }
 
   function update(player, row, col) {
-    board[row][col] = player;
+    board[row][col] = { player, row, col };
     build(size);
   }
 
   return {
     init,
-    getSize,
+    get,
+    boardSize,
     render,
     update,
   }
@@ -124,12 +129,12 @@ const gameState = (function () {
       players.push(player);
     }
   }
-  
+
   const attachBoard = function (boardArg) {
     board = boardArg;
   }
 
-  // Gamestate managemant
+  // Gamestate management
   const start = function () {
     setCurrentPlayer(players[0], false);
     console.log(board.render());
@@ -139,13 +144,13 @@ const gameState = (function () {
     if (nextTurnFlag) {
       let playerIndex;
       players.findIndex((child, index) => {
-        if(child.id == player.id)
-        playerIndex = index;
+        if (child.id == player.id)
+          playerIndex = index;
       });
-      if (playerIndex >= players.length-1) {
-        currentPlayer = {...players[0]};
+      if (playerIndex >= players.length - 1) {
+        currentPlayer = { ...players[0] };
       } else {
-        currentPlayer = {...players[playerIndex+1]};
+        currentPlayer = { ...players[playerIndex + 1] };
       }
     } else {
       currentPlayer = player;
@@ -153,10 +158,24 @@ const gameState = (function () {
   }
 
   const playTurn = function (row, col) {
-    board.update(currentPlayer, row, col);
-    setCurrentPlayer(currentPlayer, true);
-    console.log(board.render());
+    const filledFlag = isFilled(row, col);
 
+    if (!filledFlag) {
+      board.update(currentPlayer, row, col);
+      setCurrentPlayer(currentPlayer, true);
+      console.log(board.render());
+    } else {
+      throw Error(`${row}x${col}::Tile already filled!`);
+    }
+  }
+
+  const isFilled = function (row, col) {
+    const tile = board.get()[row][col];
+    if (tile.player.marker !== '.') {
+      return true;
+    }
+
+    return false;
   }
 
   /*
@@ -203,6 +222,4 @@ gameState.start();
 gameState.playTurn(1, 1);
 gameState.playTurn(0, 0);
 gameState.playTurn(2, 1);
-gameState.playTurn(2, 0);
-gameState.playTurn(0, 1);
-gameState.playTurn(2, 2);
+gameState.playTurn(2, 1);
