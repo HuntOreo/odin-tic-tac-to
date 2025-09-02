@@ -131,16 +131,6 @@ const gameState = (function () {
     }
   }
 
-  const attachBoard = function (boardArg) {
-    board = boardArg;
-  }
-
-  // Gamestate management
-  const start = function () {
-    setCurrentPlayer(players[0], false);
-    console.log(board.render());
-  }
-
   const setCurrentPlayer = function (player, nextTurnFlag) {
     if (nextTurnFlag) {
       let playerIndex;
@@ -156,6 +146,16 @@ const gameState = (function () {
     } else {
       currentPlayer = player;
     }
+  }
+
+  const attachBoard = function (boardArg) {
+    board = boardArg;
+  }
+
+  // Gamestate management
+  const start = function () {
+    setCurrentPlayer(players[0], false);
+    console.log(board.render());
   }
 
   const playTurn = function (row, col) {
@@ -187,21 +187,19 @@ const gameState = (function () {
 
   const checkWinner = (row, col) => {
     winState.setPlayer(currentPlayer);
-    console.log(winState.check(board, row, col));
+    const isWinner = winState.check(board, row, col);
+
+    if (isWinner) {
+      console.log(`${currentPlayer.name} Wins!`)
+    }
   }
 
-  /*
-    Check for winning move
-      - Diagonal: [boardSize] of the same in a single diagonal
-        - Forward diagonal
-        - Backward diagonal
-  */
-
-  /* WIN STATE */
+  /* WIN STATE IIFE */
   /* Handle checks for winning move */
   const winState = (function () {
     let current;
 
+    // Gets relevant game info and packages it neatly
     const getState = function (board) {
       const gameboard = board.get();
       const size = board.getSize();
@@ -222,6 +220,7 @@ const gameState = (function () {
       return current;
     }
 
+    // Receive a tile set and inspect for matching markers
     const checkTiles = function (tiles, state) {
       let score = 0;
       for (tile of tiles) {
@@ -229,20 +228,19 @@ const gameState = (function () {
           score++;
         }
       }
-
       if (score === state.size) {
-        return console.log(`${state.player.name} wins!`);
+        return true;
       }
-
       return false;
     }
 
+    // Win conditions
     const row = function (board, index) {
       const state = getState(board);
       const { gameboard } = state;
       const candidate = gameboard[index];
 
-      checkTiles(candidate, state);
+      return checkTiles(candidate, state);
     }
 
     const col = function (board, index) {
@@ -253,7 +251,7 @@ const gameState = (function () {
       for (let i = 0; i < size; i++) {
         candidate.push(gameboard[i][index]);
       }
-      checkTiles(candidate, state);
+      return checkTiles(candidate, state);
     }
 
     const diagonal = function (board, dirFlag) {
@@ -270,15 +268,27 @@ const gameState = (function () {
           candidate.push(gameboard[i][i]);
         }
       }
-      checkTiles(candidate, state);
+      return checkTiles(candidate, state);
     }
 
+    // Handle searching for win condition
     const check = function (board, rowIndex, colIndex) {
-      row(board, rowIndex);
-      col(board, colIndex);
-      diagonal(board, '>');
-      diagonal(board, '<');
-      return 'checked';
+      let isWinner = false;
+
+      if (isWinner === false) {
+        isWinner = row(board, rowIndex);
+      }
+      if (isWinner === false) {
+        isWinner = col(board, colIndex);
+      }
+      if (isWinner === false) {
+        isWinner = diagonal(board, '>');
+      }
+      if (isWinner === false) {
+        isWinner = diagonal(board, '<');
+      }
+
+      return isWinner;
     }
 
     return {
