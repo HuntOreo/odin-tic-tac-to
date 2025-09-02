@@ -4,6 +4,24 @@ Main Goal:
   Use as little globally scoped code as possible.
 */
 
+// PLAYER FACTORY
+/*******************************************
+*
+* Responsible for creating players objects.
+*
+*******************************************/
+const playerFactory = function (playerMarker, playerName) {
+  const marker = playerMarker;
+  const name = playerName;
+  const id = crypto.randomUUID()
+
+  return {
+    marker,
+    name,
+    id,
+  }
+}
+
 // GAMEBOARD IIFE //
 /***********************************
 *
@@ -15,22 +33,8 @@ const gameBoard = (function () {
   let size = 3;
   let boardString = "";
 
-  // This builds tiles that make up the board.
-  function tileFactory(player, row, column) {
-    let marker = player.marker;
-    function build() {
-      return {
-        marker,
-        row,
-        column,
-        player
-      }
-    }
-
-    return {
-      build,
-    }
-  }
+  // Blank Tile
+  const tile = playerFactory('.', 'blank');
 
   const get = function () {
     return board;
@@ -47,17 +51,14 @@ const gameBoard = (function () {
         const rowIndex = i;
         const colIndex = j;
 
-        const player = {
-          marker: '.',
-          name: undefined,
+        const tileObj = {
+          player: tile,
+          row: rowIndex,
+          col: colIndex,
         }
-
-        const tileBlueprint = tileFactory(player, rowIndex, colIndex);
-        const tile = tileBlueprint.build();
-        row.push(tile);
+        row.push(tileObj);
         index++;
       }
-
       tiles.push(row);
     }
     return tiles;
@@ -67,10 +68,6 @@ const gameBoard = (function () {
     size = boardSize;
     const builtBoard = build(size);
     board.push(...builtBoard);
-  }
-
-  function boardSize() {
-    console.log(`${size}x${size}`);
   }
 
   // Render the board as a string.
@@ -100,9 +97,9 @@ const gameBoard = (function () {
   }
 
   return {
+    size,
     init,
     get,
-    boardSize,
     render,
     update,
   }
@@ -159,11 +156,16 @@ const gameState = (function () {
 
   const playTurn = function (row, col) {
     const filledFlag = isFilled(row, col);
+    let msg = '';
 
     if (!filledFlag) {
+      msg += `${currentPlayer.name}: ${row}x${col}\n`
+
       board.update(currentPlayer, row, col);
+      msg += board.render();
+      console.log(msg);
+      checkWinner(row, col);
       setCurrentPlayer(currentPlayer, true);
-      console.log(board.render());
     } else {
       throw Error(`${row}x${col}::Tile already filled!`);
     }
@@ -179,9 +181,70 @@ const gameState = (function () {
   }
 
   /*
-    Check if tile is already filled
     Check for winning move
+      - Columns: [boardSize] of the same in a single col
+      - Diagonal: [boardSize] of the same in a single diagonal
+        - Forward diagonal
+        - Backward diagonal
   */
+  /* WIN STATE */
+  /* Handle checks for winning move */
+  const winState = (function () {
+    let current;
+
+    const setPlayer = function (player) {
+      current = player;
+    }
+
+    const getPlayer = function () {
+      return current;
+    }
+
+    const row = function (board, row) {
+      const gameboard = board.get();
+      const candidate = gameboard[row];
+      const player = getPlayer();
+      let score = 0;
+
+      for (tile of candidate) {
+        if (tile.player.marker === player.marker) {
+          score++;
+        }
+      }
+
+      if (score === board.size) {
+        console.log('Winner');
+      }
+    }
+
+    const col = function () {
+
+    }
+
+    const diagonalFor = function () {
+
+    }
+
+    const diagonalBack = function () {
+
+    }
+
+    const check = function (board, rowIndex, colIndex) {
+      row(board, rowIndex);
+      return 'checked';
+    }
+
+    return {
+      check,
+      setPlayer,
+      getPlayer,
+    }
+  })();
+
+  const checkWinner = (row, col) => {
+    winState.setPlayer(currentPlayer);
+    console.log(winState.check(board, row, col));
+  }
 
   return {
     getPlayers,
@@ -192,23 +255,6 @@ const gameState = (function () {
   }
 })();
 
-// PLAYER FACTORY
-/*******************************************
-*
-* Responsible for creating players objects.
-*
-*******************************************/
-const playerFactory = function (playerMarker, playerName) {
-  const marker = playerMarker;
-  const name = playerName;
-  const id = crypto.randomUUID()
-
-  return {
-    marker,
-    name,
-    id,
-  }
-}
 
 gameBoard.init();
 
@@ -219,7 +265,11 @@ gameState.addPlayers(hunter, karma);
 gameState.attachBoard(gameBoard);
 
 gameState.start();
+gameState.playTurn(1, 0);
+gameState.playTurn(0, 2);
 gameState.playTurn(1, 1);
-gameState.playTurn(0, 0);
 gameState.playTurn(2, 1);
-gameState.playTurn(2, 1);
+gameState.playTurn(1, 2);
+gameState.playTurn(2, 2);
+
+
