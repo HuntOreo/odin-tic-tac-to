@@ -47,7 +47,7 @@ const gameBoard = (function () {
         const colIndex = j;
 
         const player = {
-          marker: 'o',
+          marker: '.',
           name: undefined,
         }
 
@@ -72,16 +72,18 @@ const gameBoard = (function () {
     console.log(`Board is ${boardSize} by ${boardSize}`);
   }
 
+  // Render the board as a string that displays each tile in rows & columns.
+  //    Attaches a numbering system for readability.
   function displayBoard() {
     boardString = " ";
     for (let i = 0; i < boardSize; i++) {
-      boardString += ` ${i}|`;
+      boardString += ` ${i}|`; // Number columns
     }
 
     boardString += `\n`;
 
     for (let i = 0; i < boardSize; i++) {
-      boardString += `${i}-`
+      boardString += `${i}-`; // Number rows
       for (let j = 0; j < boardSize; j++) {
         boardString += `[${board[i][j].marker}]`;
       }
@@ -91,22 +93,26 @@ const gameBoard = (function () {
     return boardString;
   }
 
-  function updateBoard(marker, row, col) {
+  function updateBoard(player, row, col) {
     // recieve marker, and index's of the tile that will be updated.
     // after tile is updated, rebuild board data and string.
 
-
+    board[row][col] = player;
+    buildBoard(boardSize);
+    console.log(board);
   }
 
   return {
     init,
     getSize,
     displayBoard,
+    updateBoard,
   }
 })();
 
 const gameState = (function () {
   let players = [];
+  let currentPlayer = {};
   let board;
 
   const getPlayers = function () {
@@ -127,11 +133,17 @@ const gameState = (function () {
     return board;
   }
 
+  const playTurn = function (player, row, col) {
+    board.updateBoard(player, row, col);
+    console.log(board.displayBoard());
+  }
+
   return {
     getPlayers,
     addPlayers,
     attachBoard,
     getBoard,
+    playTurn,
   }
 })();
 
@@ -145,15 +157,14 @@ const playerFactory = function (playerMarker, playerName) {
   }
 }
 
-gameBoard.init(10);
+gameBoard.init(3);
+console.log(gameBoard.displayBoard());
 const hunter = playerFactory('x', 'Hunter');
 const karma = playerFactory('o', 'Karma');
 
 gameState.addPlayers(hunter, karma);
-console.log(gameState.getPlayers());
 gameState.attachBoard(gameBoard);
+console.log(gameState.getPlayers());
 
-console.log(hunter.name);
-console.log(karma.name);
-
-console.log(gameBoard.displayBoard());
+gameState.playTurn(hunter, 1, 1);
+gameState.playTurn(karma, 0, 0);
