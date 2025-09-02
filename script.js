@@ -4,7 +4,7 @@ Main Goal:
   Use as little globally scoped code as possible.
 */
 
-// PLAYER FACTORY
+// PLAYER FACTORY //
 /*******************************************
 *
 * Responsible for creating players objects.
@@ -38,6 +38,10 @@ const gameBoard = (function () {
 
   const get = function () {
     return board;
+  }
+
+  const getSize = function () {
+    return size;
   }
 
   // Builds the board, storing relevant data of each tile inside an array.
@@ -97,9 +101,9 @@ const gameBoard = (function () {
   }
 
   return {
-    size,
     init,
     get,
+    getSize,
     render,
     update,
   }
@@ -164,6 +168,7 @@ const gameState = (function () {
       board.update(currentPlayer, row, col);
       msg += board.render();
       console.log(msg);
+
       checkWinner(row, col);
       setCurrentPlayer(currentPlayer, true);
     } else {
@@ -178,6 +183,11 @@ const gameState = (function () {
     }
 
     return false;
+  }
+
+  const checkWinner = (row, col) => {
+    winState.setPlayer(currentPlayer);
+    console.log(winState.check(board, row, col));
   }
 
   /*
@@ -202,6 +212,7 @@ const gameState = (function () {
 
     const row = function (board, row) {
       const gameboard = board.get();
+      const size = board.getSize();
       const candidate = gameboard[row];
       const player = getPlayer();
       let score = 0;
@@ -212,7 +223,8 @@ const gameState = (function () {
         }
       }
 
-      if (score === board.size) {
+      console.log(size);
+      if (score === size) {
         console.log('Winner');
       }
     }
@@ -241,11 +253,6 @@ const gameState = (function () {
     }
   })();
 
-  const checkWinner = (row, col) => {
-    winState.setPlayer(currentPlayer);
-    console.log(winState.check(board, row, col));
-  }
-
   return {
     getPlayers,
     addPlayers,
@@ -256,7 +263,7 @@ const gameState = (function () {
 })();
 
 
-gameBoard.init();
+gameBoard.init(4);
 
 const hunter = playerFactory('x', 'Hunter');
 const karma = playerFactory('o', 'Karma');
@@ -270,6 +277,7 @@ gameState.playTurn(0, 2);
 gameState.playTurn(1, 1);
 gameState.playTurn(2, 1);
 gameState.playTurn(1, 2);
-gameState.playTurn(2, 2);
+gameState.playTurn(0, 3);
+gameState.playTurn(1, 3);
 
 
