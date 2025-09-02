@@ -94,12 +94,8 @@ const gameBoard = (function () {
   }
 
   function updateBoard(player, row, col) {
-    // recieve marker, and index's of the tile that will be updated.
-    // after tile is updated, rebuild board data and string.
-
     board[row][col] = player;
     buildBoard(boardSize);
-    console.log(board);
   }
 
   return {
@@ -129,10 +125,6 @@ const gameState = (function () {
     board = boardArg;
   }
 
-  const getBoard = function () {
-    return board;
-  }
-
   const playTurn = function (player, row, col) {
     board.updateBoard(player, row, col);
     console.log(board.displayBoard());
@@ -142,7 +134,6 @@ const gameState = (function () {
     getPlayers,
     addPlayers,
     attachBoard,
-    getBoard,
     playTurn,
   }
 })();
@@ -159,12 +150,12 @@ const playerFactory = function (playerMarker, playerName) {
 
 gameBoard.init(3);
 console.log(gameBoard.displayBoard());
+
 const hunter = playerFactory('x', 'Hunter');
 const karma = playerFactory('o', 'Karma');
 
 gameState.addPlayers(hunter, karma);
 gameState.attachBoard(gameBoard);
-console.log(gameState.getPlayers());
 
 gameState.playTurn(hunter, 1, 1);
 gameState.playTurn(karma, 0, 0);
