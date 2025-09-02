@@ -16,11 +16,18 @@ Requirements:
   Control game-flow with an object.
 */
 
+// GAMEBOARD IIFE //
+/***********************************
+*
+* Handles the STATE of the BOARD.
+*
+***********************************/
 const gameBoard = (function () {
   let board = [];
   let boardSize = 3;
   let boardString = "";
 
+  // This builds tiles that make up the board.
   function tileFactory(player, row, column) {
     let marker = player.marker;
     function build() {
@@ -36,7 +43,8 @@ const gameBoard = (function () {
       build,
     }
   }
-
+  // Builds the board, storing relevant data of each tile inside an array.
+  //   Data such as player marker, index of the tile (row/column).
   function buildBoard(size) {
     let tiles = [];
     let index = 0;
@@ -73,7 +81,7 @@ const gameBoard = (function () {
   }
 
   // Render the board as a string that displays each tile in rows & columns.
-  //    Attaches a numbering system for readability.
+  //   Attaches a numbering system for readability.
   function displayBoard() {
     boardString = " ";
     for (let i = 0; i < boardSize; i++) {
@@ -106,6 +114,12 @@ const gameBoard = (function () {
   }
 })();
 
+// GAMESTATE IIFE //
+/********************************************** 
+*
+* Handles the LIFECYCLE and STATE of the GAME.
+*
+**********************************************/
 const gameState = (function () {
   let players = [];
   let currentPlayer = {};
@@ -127,7 +141,6 @@ const gameState = (function () {
 
   const playTurn = function (player, row, col) {
     board.updateBoard(player, row, col);
-    console.log(board.displayBoard());
   }
 
   return {
@@ -138,6 +151,12 @@ const gameState = (function () {
   }
 })();
 
+// PLAYER FACTORY
+/*******************************************
+*
+* Responsible for creating players objects.
+*
+*******************************************/
 const playerFactory = function (playerMarker, playerName) {
   const marker = playerMarker;
   const name = playerName;
@@ -148,8 +167,7 @@ const playerFactory = function (playerMarker, playerName) {
   }
 }
 
-gameBoard.init(3);
-console.log(gameBoard.displayBoard());
+gameBoard.init();
 
 const hunter = playerFactory('x', 'Hunter');
 const karma = playerFactory('o', 'Karma');
@@ -157,5 +175,8 @@ const karma = playerFactory('o', 'Karma');
 gameState.addPlayers(hunter, karma);
 gameState.attachBoard(gameBoard);
 
+console.log(gameBoard.displayBoard());
 gameState.playTurn(hunter, 1, 1);
+console.log(gameBoard.displayBoard());
 gameState.playTurn(karma, 0, 0);
+console.log(gameBoard.displayBoard());
