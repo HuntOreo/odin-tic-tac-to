@@ -4,6 +4,24 @@ Main Goal:
   Use as little globally scoped code as possible.
 */
 
+// PLAYER FACTORY //
+/*******************************************
+*
+* Responsible for creating players objects.
+*
+*******************************************/
+const playerFactory = function (playerMarker, playerName) {
+  const marker = playerMarker;
+  const name = playerName;
+  const id = crypto.randomUUID()
+
+  return {
+    marker,
+    name,
+    id,
+  }
+}
+
 // GAMEBOARD IIFE //
 /***********************************
 *
@@ -15,21 +33,15 @@ const gameBoard = (function () {
   let size = 3;
   let boardString = "";
 
-  // This builds tiles that make up the board.
-  function tileFactory(player, row, column) {
-    let marker = player.marker;
-    function build() {
-      return {
-        marker,
-        row,
-        column,
-        player
-      }
-    }
+  // Blank Tile
+  const tile = playerFactory('.', 'blank');
 
-    return {
-      build,
-    }
+  const get = function () {
+    return board;
+  }
+
+  const getSize = function () {
+    return size;
   }
 
   // Builds the board, storing relevant data of each tile inside an array.
@@ -43,17 +55,14 @@ const gameBoard = (function () {
         const rowIndex = i;
         const colIndex = j;
 
-        const player = {
-          marker: '.',
-          name: undefined,
+        const tileObj = {
+          player: tile,
+          row: rowIndex,
+          col: colIndex,
         }
-
-        const tileBlueprint = tileFactory(player, rowIndex, colIndex);
-        const tile = tileBlueprint.build();
-        row.push(tile);
+        row.push(tileObj);
         index++;
       }
-
       tiles.push(row);
     }
     return tiles;
@@ -65,11 +74,7 @@ const gameBoard = (function () {
     board.push(...builtBoard);
   }
 
-  function getSize() {
-    console.log(`Board is ${size} by ${size}`);
-  }
-
-  // Render the board as a string that displays each tile in rows & columns.
+  // Render the board as a string.
   //   Attaches a numbering system for readability.
   function render() {
     boardString = " ";
@@ -82,7 +87,7 @@ const gameBoard = (function () {
     for (let i = 0; i < size; i++) {
       boardString += `${i}-`; // Number rows
       for (let j = 0; j < size; j++) {
-        boardString += `[${board[i][j].marker}]`;
+        boardString += `[${board[i][j].player.marker}]`;
       }
       boardString += `\n`
     }
@@ -91,12 +96,13 @@ const gameBoard = (function () {
   }
 
   function update(player, row, col) {
-    board[row][col] = player;
+    board[row][col] = { player, row, col };
     build(size);
   }
 
   return {
     init,
+    get,
     getSize,
     render,
     update,
@@ -124,45 +130,173 @@ const gameState = (function () {
       players.push(player);
     }
   }
-  
-  const attachBoard = function (boardArg) {
-    board = boardArg;
-  }
-
-  // Gamestate managemant
-  const start = function () {
-    setCurrentPlayer(players[0], false);
-    console.log(board.render());
-  }
 
   const setCurrentPlayer = function (player, nextTurnFlag) {
     if (nextTurnFlag) {
       let playerIndex;
       players.findIndex((child, index) => {
-        if(child.id == player.id)
-        playerIndex = index;
+        if (child.id == player.id)
+          playerIndex = index;
       });
-      if (playerIndex >= players.length-1) {
-        currentPlayer = {...players[0]};
+      if (playerIndex >= players.length - 1) {
+        currentPlayer = { ...players[0] };
       } else {
-        currentPlayer = {...players[playerIndex+1]};
+        currentPlayer = { ...players[playerIndex + 1] };
       }
     } else {
       currentPlayer = player;
     }
   }
 
-  const playTurn = function (row, col) {
-    board.update(currentPlayer, row, col);
-    setCurrentPlayer(currentPlayer, true);
-    console.log(board.render());
-
+  const attachBoard = function (boardArg) {
+    board = boardArg;
   }
 
-  /*
-    Check if tile is already filled
-    Check for winning move
-  */
+  // Gamestate management
+  const start = function () {
+    setCurrentPlayer(players[0], false);
+    console.log(board.render());
+  }
+
+  const playTurn = function (row, col) {
+    const filledFlag = isFilled(row, col);
+    let msg = '';
+
+    if (!filledFlag) {
+      msg += `${currentPlayer.name}: ${row}x${col}\n`
+
+      board.update(currentPlayer, row, col);
+      msg += board.render();
+      console.log(msg);
+
+      checkWinner(row, col);
+      setCurrentPlayer(currentPlayer, true);
+    } else {
+      throw Error(`${row}x${col}::Tile already filled!`);
+    }
+  }
+
+  const isFilled = function (row, col) {
+    const tile = board.get()[row][col];
+    if (tile.player.marker !== '.') {
+      return true;
+    }
+
+    return false;
+  }
+
+  const checkWinner = (row, col) => {
+    winState.setPlayer(currentPlayer);
+    const isWinner = winState.check(board, row, col);
+
+    if (isWinner) {
+      console.log(`${currentPlayer.name} Wins!`)
+    }
+  }
+
+  /* WIN STATE IIFE */
+  /* Handle checks for winning move */
+  const winState = (function () {
+    let current;
+
+    // Gets relevant game info and packages it neatly
+    const getState = function (board) {
+      const gameboard = board.get();
+      const size = board.getSize();
+      const player = getPlayer();
+
+      return {
+        gameboard,
+        size,
+        player,
+      }
+    }
+
+    const setPlayer = function (player) {
+      current = player;
+    }
+
+    const getPlayer = function () {
+      return current;
+    }
+
+    // Receive a tile set and inspect for matching markers
+    const checkTiles = function (tiles, state) {
+      let score = 0;
+      for (tile of tiles) {
+        if (tile.player.marker === state.player.marker) {
+          score++;
+        }
+      }
+      if (score === state.size) {
+        return true;
+      }
+      return false;
+    }
+
+    // Win conditions
+    const row = function (board, index) {
+      const state = getState(board);
+      const { gameboard } = state;
+      const candidate = gameboard[index];
+
+      return checkTiles(candidate, state);
+    }
+
+    const col = function (board, index) {
+      const state = getState(board);
+      const { gameboard, size } = state;
+      const candidate = [];
+
+      for (let i = 0; i < size; i++) {
+        candidate.push(gameboard[i][index]);
+      }
+      return checkTiles(candidate, state);
+    }
+
+    const diagonal = function (board, dirFlag) {
+      const state = getState(board);
+      const { gameboard, size } = state;
+      const candidate = [];
+
+      let j = size - 1
+      for (let i = 0; i < size; i++) {
+        if (dirFlag == '>') {
+          candidate.push(gameboard[i][j]);
+          j--;
+        } else if (dirFlag == '<') {
+          candidate.push(gameboard[i][i]);
+        }
+      }
+      return checkTiles(candidate, state);
+    }
+
+    // Handle searching for win condition
+    const check = function (board, rowIndex, colIndex) {
+      let isWinner = false;
+
+      if (isWinner === false) {
+        isWinner = row(board, rowIndex);
+      }
+      if (isWinner === false) {
+        isWinner = col(board, colIndex);
+      }
+      if (isWinner === false) {
+        isWinner = diagonal(board, '>');
+      }
+      if (isWinner === false) {
+        isWinner = diagonal(board, '<');
+      }
+
+      return isWinner;
+    }
+
+    return {
+      check,
+      setPlayer,
+      getPlayer,
+    }
+  })();
 
   return {
     getPlayers,
@@ -173,24 +307,7 @@ const gameState = (function () {
   }
 })();
 
-// PLAYER FACTORY
-/*******************************************
-*
-* Responsible for creating players objects.
-*
-*******************************************/
-const playerFactory = function (playerMarker, playerName) {
-  const marker = playerMarker;
-  const name = playerName;
-  const id = crypto.randomUUID()
-
-  return {
-    marker,
-    name,
-    id,
-  }
-}
-
+// Play Game
 gameBoard.init();
 
 const hunter = playerFactory('x', 'Hunter');
@@ -200,9 +317,8 @@ gameState.addPlayers(hunter, karma);
 gameState.attachBoard(gameBoard);
 
 gameState.start();
+gameState.playTurn(0, 2);
+gameState.playTurn(1, 2);
 gameState.playTurn(1, 1);
-gameState.playTurn(0, 0);
 gameState.playTurn(2, 1);
 gameState.playTurn(2, 0);
-gameState.playTurn(0, 1);
-gameState.playTurn(2, 2);
