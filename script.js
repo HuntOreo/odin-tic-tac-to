@@ -93,6 +93,7 @@ const gameBoard = (function () {
 
 const gameState = (function () {
   let players = [];
+  let board;
 
   const getPlayers = function () {
     return players;
@@ -104,9 +105,19 @@ const gameState = (function () {
     }
   }
 
+  const attachBoard = function (boardArg) {
+    board = boardArg;
+  }
+
+  const getBoard = function () {
+    return board;
+  }
+
   return {
     getPlayers,
     addPlayers,
+    attachBoard,
+    getBoard,
   }
 })();
 
@@ -126,6 +137,7 @@ const karma = playerFactory('o', 'Karma')
 
 gameState.addPlayers(hunter, karma);
 console.log(gameState.getPlayers());
+gameState.attachBoard(gameBoard);
 
 console.log(hunter.name);
 console.log(karma.name);
