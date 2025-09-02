@@ -192,11 +192,11 @@ const gameState = (function () {
 
   /*
     Check for winning move
-      - Columns: [boardSize] of the same in a single col
       - Diagonal: [boardSize] of the same in a single diagonal
         - Forward diagonal
         - Backward diagonal
   */
+
   /* WIN STATE */
   /* Handle checks for winning move */
   const winState = (function () {
@@ -233,40 +233,51 @@ const gameState = (function () {
       if (score === state.size) {
         return console.log(`${state.player.name} wins!`);
       }
+
+      return false;
     }
 
-    const row = function (board, row) {
+    const row = function (board, index) {
       const state = getState(board);
       const { gameboard } = state;
-      const candidate = gameboard[row];
+      const candidate = gameboard[index];
 
       checkTiles(candidate, state);
     }
 
-    const col = function (board, row, col) {
+    const col = function (board, index) {
       const state = getState(board);
       const { gameboard, size } = state;
       const candidate = [];
 
       for (let i = 0; i < size; i++) {
-        candidate.push(gameboard[i][col]);
+        candidate.push(gameboard[i][index]);
       }
-
       checkTiles(candidate, state);
-
     }
 
-    const diagonalFor = function () {
+    const diagonal = function (board, dirFlag) {
+      const state = getState(board);
+      const { gameboard, size } = state;
+      const candidate = [];
 
-    }
-
-    const diagonalBack = function () {
-
+      let j = size - 1
+      for (let i = 0; i < size; i++) {
+        if (dirFlag == '>') {
+          candidate.push(gameboard[i][j]);
+          j--;
+        } else if (dirFlag == '<') {
+          candidate.push(gameboard[i][i]);
+        }
+      }
+      checkTiles(candidate, state);
     }
 
     const check = function (board, rowIndex, colIndex) {
       row(board, rowIndex);
-      col(board, rowIndex, colIndex);
+      col(board, colIndex);
+      diagonal(board, '>');
+      diagonal(board, '<');
       return 'checked';
     }
 
@@ -287,7 +298,7 @@ const gameState = (function () {
 })();
 
 // Play Game
-gameBoard.init(4);
+gameBoard.init();
 
 const hunter = playerFactory('x', 'Hunter');
 const karma = playerFactory('o', 'Karma');
@@ -296,12 +307,8 @@ gameState.addPlayers(hunter, karma);
 gameState.attachBoard(gameBoard);
 
 gameState.start();
-gameState.playTurn(0, 0);
+gameState.playTurn(0, 2);
 gameState.playTurn(1, 2);
-gameState.playTurn(1, 0);
+gameState.playTurn(1, 1);
 gameState.playTurn(2, 1);
 gameState.playTurn(2, 0);
-gameState.playTurn(1, 3);
-gameState.playTurn(3, 0);
-
-
