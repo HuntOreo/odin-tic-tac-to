@@ -114,6 +114,7 @@ const gameState = (function () {
   let currentPlayer = {};
   let board;
 
+  // General
   const getPlayers = function () {
     return players;
   }
@@ -123,20 +124,46 @@ const gameState = (function () {
       players.push(player);
     }
   }
-
+  
   const attachBoard = function (boardArg) {
     board = boardArg;
   }
 
-  const playTurn = function (player, row, col) {
-    board.update(player, row, col);
+  // Gamestate managemant
+  const start = function () {
+    setCurrentPlayer(players[0], false);
+  }
+
+  const setCurrentPlayer = function (player, nextTurnFlag) {
+    if (nextTurnFlag) {
+      let playerIndex;
+      players.findIndex((child, index) => {
+        if(child.id == player.id)
+        playerIndex = index;
+      })
+      if (playerIndex >= players.length-1) {
+        console.log(playerIndex);
+        currentPlayer = {...players[0]};
+      } else {
+        currentPlayer = {...players[playerIndex+1]};
+      }
+    } else {
+      currentPlayer = player;
+    }
+  }
+
+  const playTurn = function (row, col) {
+    board.update(currentPlayer, row, col);
+    setCurrentPlayer(currentPlayer, true);
     console.log(board.render());
+
   }
 
   return {
     getPlayers,
     addPlayers,
     attachBoard,
+    start,
     playTurn,
   }
 })();
@@ -150,10 +177,12 @@ const gameState = (function () {
 const playerFactory = function (playerMarker, playerName) {
   const marker = playerMarker;
   const name = playerName;
+  const id = crypto.randomUUID()
 
   return {
     marker,
     name,
+    id,
   }
 }
 
@@ -164,7 +193,14 @@ const karma = playerFactory('o', 'Karma');
 
 gameState.addPlayers(hunter, karma);
 gameState.attachBoard(gameBoard);
+gameState.start();
 
 console.log(gameBoard.render());
-gameState.playTurn(hunter, 1, 1);
-gameState.playTurn(karma, 0, 0);
+gameState.playTurn(1, 1);
+gameState.playTurn(0, 0);
+gameState.playTurn(2, 1);
+gameState.playTurn(1, 1);
+gameState.playTurn(2, 0);
+gameState.playTurn(0, 1);
+gameState.playTurn(2, 2);
+
