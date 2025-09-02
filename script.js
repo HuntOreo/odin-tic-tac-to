@@ -21,8 +21,8 @@ const gameBoard = (function () {
   let boardSize = 3;
   let boardString = "";
 
-  function tileFactory(marker, row, column) {
-    let player = null;
+  function tileFactory(player, row, column) {
+    let marker = player.marker;
     function build() {
       return {
         marker,
@@ -45,7 +45,13 @@ const gameBoard = (function () {
       for (let j = 0; j < size; j++) {
         const rowIndex = i;
         const colIndex = j;
-        const tileBlueprint = tileFactory('.', rowIndex, colIndex);
+
+        const player = {
+          marker: 'o',
+          name: undefined,
+        }
+
+        const tileBlueprint = tileFactory(player, rowIndex, colIndex);
         const tile = tileBlueprint.build();
         row.push(tile);
         index++;
@@ -85,6 +91,6 @@ const gameBoard = (function () {
   }
 })()
 
-gameBoard.init(10);
+gameBoard.init();
 gameBoard.getSize();
 console.log(gameBoard.displayBoard());
