@@ -33,9 +33,6 @@ const gameBoard = (function () {
   let size = 3;
   let boardString = "";
 
-  // Blank Tile
-  const tile = playerFactory('.', 'tile');
-
   const get = function () {
     return board;
   }
@@ -47,6 +44,7 @@ const gameBoard = (function () {
   // Builds the board, storing relevant data of each tile inside an array.
   //   Data such as player marker, index of the tile (row/column).
   function build(boardSize) {
+    const tile = playerFactory('.', 'tile'); // Blank tile.
     let tiles = [];
     let index = 0;
     for (let i = 0; i < boardSize; i++) {
