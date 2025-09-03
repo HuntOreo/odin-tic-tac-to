@@ -121,18 +121,24 @@ const gameState = (function () {
   let board;
 
   // General
+  const init = function (board, players) {
+    attachBoard(board);
+    addPlayers(players);
+    setCurrentPlayer(players[0]);
+  }
+
   const getPlayers = function () {
     return players;
   }
 
-  const addPlayers = function (...playersArg) {
+  const addPlayers = function (playersArg) {
     for (player of playersArg) {
       players.push(player);
     }
   }
 
-  const setCurrentPlayer = function (player, nextTurnFlag) {
-    if (nextTurnFlag) {
+  function setCurrentPlayer(player, flag) {
+    if (flag) {
       let playerIndex;
       players.findIndex((child, index) => {
         if (child.id == player.id)
@@ -140,6 +146,7 @@ const gameState = (function () {
       });
       if (playerIndex >= players.length - 1) {
         currentPlayer = { ...players[0] };
+        return currentPlayer;
       } else {
         currentPlayer = { ...players[playerIndex + 1] };
       }
@@ -148,7 +155,7 @@ const gameState = (function () {
     }
   }
 
-  const getCurrentPlayer = function () {
+  function getCurrentPlayer() {
     return currentPlayer;
   }
 
@@ -163,18 +170,19 @@ const gameState = (function () {
   }
 
   const playTurn = function (row, col) {
+    const current = getCurrentPlayer();
     const filledFlag = isFilled(row, col);
     let msg = '';
 
     if (!filledFlag) {
-      msg += `${currentPlayer.name}: ${row}x${col}\n`
+      msg += `${current.name}: ${row}x${col}\n`
 
-      board.update(currentPlayer, row, col);
+      board.update(current, row, col);
       msg += board.render();
       console.log(msg);
 
-      checkWinner(row, col);
-      setCurrentPlayer(currentPlayer, true);
+      setCurrentPlayer(current, true);
+      return checkWinner(current, row, col);
     } else {
       throw Error(`${row}x${col}::Tile already filled!`);
     }
@@ -189,88 +197,11 @@ const gameState = (function () {
     return false;
   }
 
-  const checkWinner = (row, col) => {
-    winState.setPlayer(currentPlayer);
+  const checkWinner = (current, row, col) => {
+    winState.setPlayer(current);
     const isWinner = winState.check(board, row, col);
 
-    if (isWinner) {
-      console.log(`${currentPlayer.name} Wins!`)
-    }
-  }
-
-  // TODO:
-  //    Create a play session, where a player is prompted to input a tile they wish to play.
-  //      After a player makes a play, check for a winner.
-  //        If no winner is found, end the turn and pass it to the next player.
-  //        Repeat until a winner is found
-  //          When a winner is found, end the play session.
-
-  const play = () => {
-    let addingPlayerFlag = true;
-    let playingFlag = true;
-
-    const size = prompt('Board size: (leave blank for default)');
-    if (size === null) {
-      addingPlayerFlag = false;
-      playingFlag = false;
-    } else {
-      size ? gameBoard.init(size) : gameBoard.init();
-      attachBoard(gameBoard);
-    }
-
-    while (addingPlayerFlag) {
-      addingPlayerFlag = false;
-      if (players.length < 2) {
-        addingPlayerFlag = true;
-        const name = prompt('Player Name:');
-        if (name === null) {
-          addingPlayerFlag = false;
-          playingFlag = false;
-          break;
-        }
-
-        const marker = prompt('Player Marker: (ex: X/O)');
-        if (marker === null) {
-          addingPlayerFlag = false;
-          playingFlag = false;
-          break;
-        }
-
-        addPlayers({ marker, name });
-      }
-    }
-
-    if (size > 3) {
-      let addMoreCheck = false;
-      const addMorePrompt = prompt('Add more players? (y/n)');
-      if (addMorePrompt === null) { playingFlag = false }
-
-      if (addMorePrompt === 'y') {
-        addMoreCheck = true;
-        while (addMoreCheck) {
-          const name = prompt('Player Name:');
-          const marker = prompt('Player Marker: (ex: X/O)');
-          addPlayers(marker, name);
-
-          const addMorePrompt = prompt('Add more players? (y/n)');
-          if (addMorePrompt === null) {
-            playingFlag = false;
-            break;
-          }
-          if (addMorePrompt === 'y') { addMoreCheck = true }
-          if (addMorePrompt === 'n') { addMoreCheck = false }
-        }
-      }
-    }
-
-    while (playingFlag) {
-      playingFlag = false;
-      start();
-      const player = getCurrentPlayer();
-      const index = prompt(`${player.name}, choose a tile. (ex: 0x0)`);
-      const indexFormat = index.split('x');
-      playTurn(indexFormat[0], indexFormat[1]);
-    }
+    return isWinner;
   }
 
   /* WIN STATE IIFE */
@@ -379,29 +310,113 @@ const gameState = (function () {
 
   return {
     getPlayers,
-    addPlayers,
-    play,
-    // attachBoard,
-    // start,
-    // playTurn,
+    checkWinner,
+    getCurrentPlayer,
+    playTurn,
+    start,
+    init
   }
 })();
 
-// // Set up
-// const hunter = playerFactory('x', 'Hunter');
-// const karma = playerFactory('o', 'Karma');
+// TODO:
+//        If no winner is found, end the turn and pass it to the next player.
+//        Repeat until a winner is found
+//          When a winner is found, end the play session.
+const gameSession = (function () {
+  let addingPlayerFlag = true;
+  let playingFlag = true;
+  const init = function (players, size) {
+    gameBoard.init();
+    gameState.init(gameBoard, players);
+  }
 
-// gameBoard.init();
+  const play = function () {
+    gameState.start();
 
-// gameState.addPlayers(hunter, karma);
-// gameState.attachBoard(gameBoard);
+    while (playingFlag) {
 
-// // Play Game
-// gameState.start();
-// gameState.playTurn(0, 2);
-// gameState.playTurn(1, 2);
-// gameState.playTurn(1, 1);
-// gameState.playTurn(2, 1);
-// gameState.playTurn(2, 0);
+      const index = prompt('Which tile? (ex: 0x0)');
+      const indexArr = index.split('x');
+      const row = indexArr[0];
+      const col = indexArr[1];
+      const isWinner = turn(row, col);
 
-gameState.play();
+      if (isWinner) {
+        togglePlayingFlag();
+        console.log('Winner!');
+      }
+    }
+  }
+
+  const turn = function (row, col) {
+    return gameState.playTurn(row, col)
+  }
+
+  const togglePlayingFlag = function () {
+    playingFlag = !playingFlag;
+  }
+  // const size = prompt('Board size: (leave blank for default)');
+
+  // if (size === null) {
+  //   addingPlayerFlag = false;
+  //   playingFlag = false;
+  // } else {
+  //   size ? gameBoard.init(size) : gameBoard.init();
+  //   attachBoard(gameBoard);
+  // }
+
+  // while (addingPlayerFlag) {
+  //   addingPlayerFlag = false;
+  //   if (players.length < 2) {
+  //     addingPlayerFlag = true;
+  //     const name = prompt('Player Name:');
+  //     if (name === null) {
+  //       addingPlayerFlag = false;
+  //       playingFlag = false;
+  //       break;
+  //     }
+  //     const marker = prompt('Player Marker: (ex: X/O)');
+  //     if (marker === null) {
+  //       addingPlayerFlag = false;
+  //       playingFlag = false;
+  //       break;
+  //     }
+  //     addPlayers({ marker, name });
+  //   }
+  // }
+
+  // if (size > 3) {
+  //   let addMoreCheck = false;
+  //   const addMorePrompt = prompt('Add more players? (y/n)');
+  //   if (addMorePrompt === null) { playingFlag = false }
+  //   if (addMorePrompt === 'y') {
+  //     addMoreCheck = true;
+  //     while (addMoreCheck) {
+  //       const name = prompt('Player Name:');
+  //       const marker = prompt('Player Marker: (ex: X/O)');
+  //       addPlayers({ marker, name });
+  //       const addMorePrompt = prompt('Add more players? (y/n)');
+  //       if (addMorePrompt === null) {
+  //         playingFlag = false;
+  //         break;
+  //       }
+  //       if (addMorePrompt === 'y') { addMoreCheck = true }
+  //       if (addMorePrompt === 'n') { addMoreCheck = false }
+  //     }
+  //   }
+  // }
+
+  return {
+    init,
+    play
+  }
+
+})();
+
+const playerOne = playerFactory('x', 'Hunter');
+const playerTwo = playerFactory('o', 'Karma');
+
+const players = [playerOne, playerTwo];
+
+gameSession.init(players);
+gameSession.play();
