@@ -194,6 +194,74 @@ const gameState = (function () {
     }
   }
 
+  // TODO:
+  //    Create a play session, where a player is prompted to input a tile they wish to play.
+  //      After a player makes a play, check for a winner.
+  //        If no winner is found, end the turn and pass it to the next player.
+  //        Repeat until a winner is found
+  //          When a winner is found, end the play session.
+
+  const play = () => {
+    let addingPlayerFlag = true;
+    let playingFlag = true;
+
+    const size = prompt('Board size: (leave blank for default)');
+    if (size === null) {
+      addingPlayerFlag = false;
+      playingFlag = false;
+    } else {
+      size ? gameBoard.init(size) : gameBoard.init();
+      attachBoard(gameBoard);
+    }
+
+    while (addingPlayerFlag) {
+      let addMoreCheck = false;
+
+      if (players.length <= 2) {
+        const name = prompt('Player Name:');
+        if (name === null) {
+          addingPlayerFlag = false;
+          playingFlag = false;
+          break;
+        }
+
+        const marker = prompt('Player Marker: (ex: X/O)');
+        if (marker === null) {
+          addingPlayerFlag = false;
+          playingFlag = false;
+          break;
+        }
+
+        addPlayers(marker, name);
+      } else if (size > 3) {
+
+        const addMorePrompt = prompt('Add more players? (y/n)');
+        if (addMorePrompt === null) {
+          addingPlayerFlag = false;
+          playingFlag = false;
+          break;
+        }
+        if (addMorePrompt === 'n') {
+          addMoreCheck = false;
+          addingPlayerFlag = false;
+        } else {
+          addMoreCheck = true;
+        }
+      }
+
+      if (addMoreCheck) {
+        const name = prompt('Player Name:');
+        const marker = prompt('Player Marker: (ex: X/O)');
+        addPlayers(marker, name);
+      }
+    }
+
+    while (playingFlag) {
+      playingFlag = false;
+      start();
+    }
+  }
+
   /* WIN STATE IIFE */
   /* Handle checks for winning move */
   const winState = (function () {
@@ -301,24 +369,28 @@ const gameState = (function () {
   return {
     getPlayers,
     addPlayers,
-    attachBoard,
-    start,
-    playTurn,
+    play,
+    // attachBoard,
+    // start,
+    // playTurn,
   }
 })();
 
-// Play Game
-gameBoard.init();
+// // Set up
+// const hunter = playerFactory('x', 'Hunter');
+// const karma = playerFactory('o', 'Karma');
 
-const hunter = playerFactory('x', 'Hunter');
-const karma = playerFactory('o', 'Karma');
+// gameBoard.init();
 
-gameState.addPlayers(hunter, karma);
-gameState.attachBoard(gameBoard);
+// gameState.addPlayers(hunter, karma);
+// gameState.attachBoard(gameBoard);
 
-gameState.start();
-gameState.playTurn(0, 2);
-gameState.playTurn(1, 2);
-gameState.playTurn(1, 1);
-gameState.playTurn(2, 1);
-gameState.playTurn(2, 0);
+// // Play Game
+// gameState.start();
+// gameState.playTurn(0, 2);
+// gameState.playTurn(1, 2);
+// gameState.playTurn(1, 1);
+// gameState.playTurn(2, 1);
+// gameState.playTurn(2, 0);
+
+gameState.play();
