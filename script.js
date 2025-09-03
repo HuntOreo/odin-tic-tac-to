@@ -318,10 +318,12 @@ const gameState = (function () {
   }
 })();
 
-// TODO:
-//        If no winner is found, end the turn and pass it to the next player.
-//        Repeat until a winner is found
-//          When a winner is found, end the play session.
+// GAME SESSION IIFE //
+/******************************** 
+*
+* Handle STATE of game SESSION
+*
+********************************/
 const gameSession = (function () {
   let addingPlayerFlag = true;
   let playingFlag = true;
@@ -352,10 +354,17 @@ const gameSession = (function () {
     return gameState.playTurn(row, col)
   }
 
+  // TODO:
+  //  Receive input of the user to 
+  //    start game, 
+  //    determine board size, 
+  //    add players
+
   const togglePlayingFlag = function () {
     playingFlag = !playingFlag;
   }
-  // const size = prompt('Board size: (leave blank for default)');
+
+  /* const size = prompt('Board size: (leave blank for default)');
 
   // if (size === null) {
   //   addingPlayerFlag = false;
@@ -404,7 +413,7 @@ const gameSession = (function () {
   //       if (addMorePrompt === 'n') { addMoreCheck = false }
   //     }
   //   }
-  // }
+  */
 
   return {
     init,
