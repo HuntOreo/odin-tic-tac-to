@@ -215,9 +215,9 @@ const gameState = (function () {
     }
 
     while (addingPlayerFlag) {
-      let addMoreCheck = false;
-
-      if (players.length <= 2) {
+      addingPlayerFlag = false;
+      if (players.length < 2) {
+        addingPlayerFlag = true;
         const name = prompt('Player Name:');
         if (name === null) {
           addingPlayerFlag = false;
@@ -232,27 +232,30 @@ const gameState = (function () {
           break;
         }
 
-        addPlayers(marker, name);
-      } else if (size > 3) {
-
-        const addMorePrompt = prompt('Add more players? (y/n)');
-        if (addMorePrompt === null) {
-          addingPlayerFlag = false;
-          playingFlag = false;
-          break;
-        }
-        if (addMorePrompt === 'n') {
-          addMoreCheck = false;
-          addingPlayerFlag = false;
-        } else {
-          addMoreCheck = true;
-        }
+        addPlayers({ marker, name });
       }
+    }
 
-      if (addMoreCheck) {
-        const name = prompt('Player Name:');
-        const marker = prompt('Player Marker: (ex: X/O)');
-        addPlayers(marker, name);
+    if (size > 3) {
+      let addMoreCheck = false;
+      const addMorePrompt = prompt('Add more players? (y/n)');
+      if (addMorePrompt === null) { playingFlag = false }
+
+      if (addMorePrompt === 'y') {
+        addMoreCheck = true;
+        while (addMoreCheck) {
+          const name = prompt('Player Name:');
+          const marker = prompt('Player Marker: (ex: X/O)');
+          addPlayers(marker, name);
+
+          const addMorePrompt = prompt('Add more players? (y/n)');
+          if (addMorePrompt === null) {
+            playingFlag = false;
+            break;
+          }
+          if (addMorePrompt === 'y') { addMoreCheck = true }
+          if (addMorePrompt === 'n') { addMoreCheck = false }
+        }
       }
     }
 
