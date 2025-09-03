@@ -34,7 +34,7 @@ const gameBoard = (function () {
   let boardString = "";
 
   // Blank Tile
-  const tile = playerFactory('.', 'blank');
+  const tile = playerFactory('.', 'tile');
 
   const get = function () {
     return board;
