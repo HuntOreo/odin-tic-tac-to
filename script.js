@@ -148,6 +148,10 @@ const gameState = (function () {
     }
   }
 
+  const getCurrentPlayer = function () {
+    return currentPlayer;
+  }
+
   const attachBoard = function (boardArg) {
     board = boardArg;
   }
@@ -262,6 +266,10 @@ const gameState = (function () {
     while (playingFlag) {
       playingFlag = false;
       start();
+      const player = getCurrentPlayer();
+      const index = prompt(`${player.name}, choose a tile. (ex: 0x0)`);
+      const indexFormat = index.split('x');
+      playTurn(indexFormat[0], indexFormat[1]);
     }
   }
 
