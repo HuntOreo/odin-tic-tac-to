@@ -1,9 +1,3 @@
-/* 
-Main Goal:
-  Build a functional Tic Tac Toe game.
-  Use as little globally scoped code as possible.
-*/
-
 // PLAYER FACTORY //
 /*******************************************
 *
@@ -33,9 +27,6 @@ const gameBoard = (function () {
   let size = 3;
   let boardString = "";
 
-  // Blank Tile
-  const tile = playerFactory('.', 'blank');
-
   const get = function () {
     return board;
   }
@@ -47,6 +38,7 @@ const gameBoard = (function () {
   // Builds the board, storing relevant data of each tile inside an array.
   //   Data such as player marker, index of the tile (row/column).
   function build(boardSize) {
+    const tile = playerFactory('.', 'tile'); // Blank tile.
     let tiles = [];
     let index = 0;
     for (let i = 0; i < boardSize; i++) {
@@ -121,18 +113,24 @@ const gameState = (function () {
   let board;
 
   // General
-  const getPlayers = function () {
-    return players;
+  const init = function (board, players) {
+    attachBoard(board);
+    addPlayers(players);
+    setCurrentPlayer({ player: players[0] });
   }
 
-  const addPlayers = function (...playersArg) {
+  const addPlayers = function (playersArg) {
     for (player of playersArg) {
       players.push(player);
     }
   }
 
-  const setCurrentPlayer = function (player, nextTurnFlag) {
-    if (nextTurnFlag) {
+  const getPlayers = function () {
+    return players;
+  }
+
+  function setCurrentPlayer({ player, flag }) {
+    if (flag) {
       let playerIndex;
       players.findIndex((child, index) => {
         if (child.id == player.id)
@@ -140,6 +138,7 @@ const gameState = (function () {
       });
       if (playerIndex >= players.length - 1) {
         currentPlayer = { ...players[0] };
+        return currentPlayer;
       } else {
         currentPlayer = { ...players[playerIndex + 1] };
       }
@@ -148,29 +147,35 @@ const gameState = (function () {
     }
   }
 
+  function getCurrentPlayer() {
+    return currentPlayer;
+  }
+
   const attachBoard = function (boardArg) {
     board = boardArg;
   }
 
   // Gamestate management
   const start = function () {
-    setCurrentPlayer(players[0], false);
+    setCurrentPlayer({ player: players[0], flag: false });
     console.log(board.render());
   }
 
   const playTurn = function (row, col) {
+    const current = getCurrentPlayer();
+    console.log(current);
     const filledFlag = isFilled(row, col);
     let msg = '';
 
     if (!filledFlag) {
-      msg += `${currentPlayer.name}: ${row}x${col}\n`
+      msg += `${current.name}: ${row}x${col}\n`
 
-      board.update(currentPlayer, row, col);
+      board.update(current, row, col);
       msg += board.render();
       console.log(msg);
 
-      checkWinner(row, col);
-      setCurrentPlayer(currentPlayer, true);
+      setCurrentPlayer({ player: current, flag: true });
+      return checkWinner(current, row, col);
     } else {
       throw Error(`${row}x${col}::Tile already filled!`);
     }
@@ -185,13 +190,11 @@ const gameState = (function () {
     return false;
   }
 
-  const checkWinner = (row, col) => {
-    winState.setPlayer(currentPlayer);
+  const checkWinner = (current, row, col) => {
+    winState.setPlayer(current);
     const isWinner = winState.check(board, row, col);
 
-    if (isWinner) {
-      console.log(`${currentPlayer.name} Wins!`)
-    }
+    return isWinner;
   }
 
   /* WIN STATE IIFE */
@@ -299,26 +302,88 @@ const gameState = (function () {
   })();
 
   return {
+    init,
     getPlayers,
     addPlayers,
-    attachBoard,
     start,
     playTurn,
+    checkWinner,
   }
 })();
 
-// Play Game
-gameBoard.init();
+// GAME SESSION IIFE //
+/******************************** 
+*
+* Handle STATE of game SESSION
+*
+********************************/
+const gameSession = (function () {
 
-const hunter = playerFactory('x', 'Hunter');
-const karma = playerFactory('o', 'Karma');
+  // TODO:
+  //  Receive input of the user to 
+  //    start game, 
+  //    determine board size, 
 
-gameState.addPlayers(hunter, karma);
-gameState.attachBoard(gameBoard);
+  const init = function (players, size = 3) {
+    play();
+  }
 
-gameState.start();
-gameState.playTurn(0, 2);
-gameState.playTurn(1, 2);
-gameState.playTurn(1, 1);
-gameState.playTurn(2, 1);
-gameState.playTurn(2, 0);
+  const play = function () {
+    const players = addPlayers();
+    gameBoard.init();
+    gameState.init(gameBoard, players);
+    gameState.start();
+
+    turnPrompt();
+  }
+
+  const turnPrompt = function (repeat) {
+    const index = prompt('Which tile? (ex: 0x0)');
+    const indexArr = index.split('x');
+    const row = indexArr[0];
+    const col = indexArr[1];
+    const isWinner = gameState.playTurn(row, col);
+
+    if (isWinner) {
+      return console.log("Winner");
+    } else {
+      turnPrompt(repeat);
+    }
+  }
+
+  const addPlayers = function () {
+    let addingPlayerFlag = true;
+    const players = [];
+
+    while (addingPlayerFlag) {
+      if (players.length < 2) {
+        const name = prompt('Player Name:');
+        if (name === null) {
+          addingPlayerFlag = false;
+          break;
+        }
+
+        const marker = prompt('Player Marker: (ex: X/O)');
+        if (marker === null) {
+          addingPlayerFlag = false;
+          break;
+        }
+
+        const player = playerFactory(marker, name)
+        players.push(player);
+
+      } else {
+        addingPlayerFlag = false;
+      }
+    }
+
+    return players;
+  }
+
+  return {
+    init,
+    play
+  }
+})();
+
+gameSession.play();
