@@ -23,9 +23,19 @@ const playerFactory = function (playerMarker, playerName) {
 *
 ***********************************/
 const gameBoard = (function () {
+  let tiles = [];
   let board = [];
   let size = 3;
   let boardString = "";
+  let app;
+
+  function init(boardSize = 3) {
+    app = document.querySelector('.app');
+    size = boardSize;
+    const builtBoard = build(size);
+    board.push(...builtBoard);
+
+  }
 
   const get = function () {
     return board;
@@ -35,35 +45,84 @@ const gameBoard = (function () {
     return size;
   }
 
+  const setTiles = function (tilesArr) {
+    tiles = [...tilesArr];
+  }
+
+  const getTiles = function () {
+    return tiles;
+  }
+
+  const getTile = function (tileArg) {
+    const tiles = getTiles()
+    const tile = tiles.find((child) => {
+      if(child.id === tileArg.dataset.id) {
+        return child;
+      }
+    });
+    
+    console.log(tile);
+    return tile;
+  }
+
+  const createTiles = function () {
+    const size = getSize();
+    const loopSize = size*size;
+    const createdTiles = []
+    
+    for (let i = 0; i < loopSize; i++) {
+      const tile = playerFactory('.', 'tile'); // Blank tile.
+      createdTiles.push(tile);
+    }
+    setTiles(createdTiles);
+  }
+
   // Builds the board, storing relevant data of each tile inside an array.
-  //   Data such as player marker, index of the tile (row/column).
+  //   Data such as player marker, inde1fr 1fr 1frx of the tile (row/column).
   function build(boardSize) {
-    const tile = playerFactory('.', 'tile'); // Blank tile.
-    let tiles = [];
-    let index = 0;
+    const newBoard = [];
+    app.textContent = '';
+    const container = document.createElement('div');
+    container.classList.add('container');
+    container.addEventListener('click', (event) => {
+      if (event.target.classList.contains('tile')) {
+        getTile(event.target);
+      }
+    })
+
+    createTiles();
+    const tileSet = getTiles();
+
+    let setIndex = 0;
     for (let i = 0; i < boardSize; i++) {
       let row = [];
       for (let j = 0; j < boardSize; j++) {
+        const tileElm = document.createElement('div');
+        tileElm.classList.add('tile');
+        tileElm.dataset.id = tileSet[setIndex].id;
+        container.appendChild(tileElm);
+
         const rowIndex = i;
         const colIndex = j;
 
         const tileObj = {
-          player: tile,
+          id: tileSet[setIndex].id,
+          player: {
+            marker: tileSet[setIndex].marker,
+            name: tileSet[setIndex].name,
+          },
           row: rowIndex,
           col: colIndex,
-        }
-        row.push(tileObj);
-        index++;
-      }
-      tiles.push(row);
-    }
-    return tiles;
-  }
+          element: tileElm,
+        };
 
-  function init(boardSize = 3) {
-    size = boardSize;
-    const builtBoard = build(size);
-    board.push(...builtBoard);
+        row.push(tileObj);
+        setIndex++;
+      }
+      newBoard.push(row);
+    }
+    app.appendChild(container);
+    return newBoard;
   }
 
   // Render the board as a string.
@@ -89,7 +148,7 @@ const gameBoard = (function () {
 
   function update(player, row, col) {
     board[row][col] = { player, row, col };
-    build(size);
+    console.log(build(size));
   }
 
   return {
@@ -163,7 +222,6 @@ const gameState = (function () {
 
   const playTurn = function (row, col) {
     const current = getCurrentPlayer();
-    console.log(current);
     const filledFlag = isFilled(row, col);
     let msg = '';
 
@@ -329,7 +387,10 @@ const gameSession = (function () {
   }
 
   const play = function () {
-    const players = addPlayers();
+    // const players = addPlayers();
+    const one = playerFactory('x', 'hunter');
+    const two = playerFactory('o', 'karma');
+    const players = [one, two];
     gameBoard.init();
     gameState.init(gameBoard, players);
     gameState.start();
