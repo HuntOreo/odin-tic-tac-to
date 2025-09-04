@@ -1,9 +1,3 @@
-/* 
-Main Goal:
-  Build a functional Tic Tac Toe game.
-  Use as little globally scoped code as possible.
-*/
-
 // PLAYER FACTORY //
 /*******************************************
 *
@@ -122,11 +116,7 @@ const gameState = (function () {
   const init = function (board, players) {
     attachBoard(board);
     addPlayers(players);
-    setCurrentPlayer(players[0]);
-  }
-
-  const getPlayers = function () {
-    return players;
+    setCurrentPlayer({ player: players[0] });
   }
 
   const addPlayers = function (playersArg) {
@@ -135,7 +125,11 @@ const gameState = (function () {
     }
   }
 
-  function setCurrentPlayer(player, flag) {
+  const getPlayers = function () {
+    return players;
+  }
+
+  function setCurrentPlayer({ player, flag }) {
     if (flag) {
       let playerIndex;
       players.findIndex((child, index) => {
@@ -163,12 +157,13 @@ const gameState = (function () {
 
   // Gamestate management
   const start = function () {
-    setCurrentPlayer(players[0], false);
+    setCurrentPlayer({ player: players[0], flag: false });
     console.log(board.render());
   }
 
   const playTurn = function (row, col) {
     const current = getCurrentPlayer();
+    console.log(current);
     const filledFlag = isFilled(row, col);
     let msg = '';
 
@@ -179,7 +174,7 @@ const gameState = (function () {
       msg += board.render();
       console.log(msg);
 
-      setCurrentPlayer(current, true);
+      setCurrentPlayer({ player: current, flag: true });
       return checkWinner(current, row, col);
     } else {
       throw Error(`${row}x${col}::Tile already filled!`);
@@ -307,12 +302,12 @@ const gameState = (function () {
   })();
 
   return {
+    init,
     getPlayers,
-    checkWinner,
-    getCurrentPlayer,
-    playTurn,
+    addPlayers,
     start,
-    init
+    playTurn,
+    checkWinner,
   }
 })();
 
@@ -323,107 +318,72 @@ const gameState = (function () {
 *
 ********************************/
 const gameSession = (function () {
-  let addingPlayerFlag = true;
-  let playingFlag = true;
-  const init = function (players, size) {
-    gameBoard.init();
-    gameState.init(gameBoard, players);
-  }
-
-  const play = function () {
-    gameState.start();
-
-    while (playingFlag) {
-
-      const index = prompt('Which tile? (ex: 0x0)');
-      const indexArr = index.split('x');
-      const row = indexArr[0];
-      const col = indexArr[1];
-      const isWinner = turn(row, col);
-
-      if (isWinner) {
-        togglePlayingFlag();
-        console.log('Winner!');
-      }
-    }
-  }
-
-  const turn = function (row, col) {
-    return gameState.playTurn(row, col)
-  }
 
   // TODO:
   //  Receive input of the user to 
   //    start game, 
   //    determine board size, 
-  //    add players
 
-  const togglePlayingFlag = function () {
-    playingFlag = !playingFlag;
+  const init = function (players, size = 3) {
+    play();
   }
 
-  /* const size = prompt('Board size: (leave blank for default)');
+  const play = function () {
+    const players = addPlayers();
+    gameBoard.init();
+    gameState.init(gameBoard, players);
+    gameState.start();
 
-  // if (size === null) {
-  //   addingPlayerFlag = false;
-  //   playingFlag = false;
-  // } else {
-  //   size ? gameBoard.init(size) : gameBoard.init();
-  //   attachBoard(gameBoard);
-  // }
+    turnPrompt();
+  }
 
-  // while (addingPlayerFlag) {
-  //   addingPlayerFlag = false;
-  //   if (players.length < 2) {
-  //     addingPlayerFlag = true;
-  //     const name = prompt('Player Name:');
-  //     if (name === null) {
-  //       addingPlayerFlag = false;
-  //       playingFlag = false;
-  //       break;
-  //     }
-  //     const marker = prompt('Player Marker: (ex: X/O)');
-  //     if (marker === null) {
-  //       addingPlayerFlag = false;
-  //       playingFlag = false;
-  //       break;
-  //     }
-  //     addPlayers({ marker, name });
-  //   }
-  // }
+  const turnPrompt = function (repeat) {
+    const index = prompt('Which tile? (ex: 0x0)');
+    const indexArr = index.split('x');
+    const row = indexArr[0];
+    const col = indexArr[1];
+    const isWinner = gameState.playTurn(row, col);
 
-  // if (size > 3) {
-  //   let addMoreCheck = false;
-  //   const addMorePrompt = prompt('Add more players? (y/n)');
-  //   if (addMorePrompt === null) { playingFlag = false }
-  //   if (addMorePrompt === 'y') {
-  //     addMoreCheck = true;
-  //     while (addMoreCheck) {
-  //       const name = prompt('Player Name:');
-  //       const marker = prompt('Player Marker: (ex: X/O)');
-  //       addPlayers({ marker, name });
-  //       const addMorePrompt = prompt('Add more players? (y/n)');
-  //       if (addMorePrompt === null) {
-  //         playingFlag = false;
-  //         break;
-  //       }
-  //       if (addMorePrompt === 'y') { addMoreCheck = true }
-  //       if (addMorePrompt === 'n') { addMoreCheck = false }
-  //     }
-  //   }
-  */
+    if (isWinner) {
+      return console.log("Winner");
+    } else {
+      turnPrompt(repeat);
+    }
+  }
+
+  const addPlayers = function () {
+    let addingPlayerFlag = true;
+    const players = [];
+
+    while (addingPlayerFlag) {
+      if (players.length < 2) {
+        const name = prompt('Player Name:');
+        if (name === null) {
+          addingPlayerFlag = false;
+          break;
+        }
+
+        const marker = prompt('Player Marker: (ex: X/O)');
+        if (marker === null) {
+          addingPlayerFlag = false;
+          break;
+        }
+
+        const player = playerFactory(marker, name)
+        players.push(player);
+
+      } else {
+        addingPlayerFlag = false;
+      }
+    }
+
+    return players;
+  }
 
   return {
     init,
     play
   }
-
 })();
 
-const playerOne = playerFactory('x', 'Hunter');
-const playerTwo = playerFactory('o', 'Karma');
-
-const players = [playerOne, playerTwo];
-
-gameSession.init(players);
 gameSession.play();
