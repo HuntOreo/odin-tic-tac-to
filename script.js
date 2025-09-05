@@ -23,81 +23,170 @@ const playerFactory = function (playerMarker, playerName) {
 *
 ***********************************/
 const gameBoard = (function () {
-  let board = [];
+  let app = document.querySelector('.app');
+  let tiles = [];
+  let boardData = [];
   let size = 3;
-  let boardString = "";
+  let boardEl;
 
-  const get = function () {
-    return board;
+  function init(boardSize = 3) {
+    size = boardSize;
+    const container = document.createElement('div');
+    container.classList.add('board');
+    container.style.gridTemplateColumns = `repeat(${boardSize}, 200px)`;
+    container.style.gridTemplateRows = `repeat(${boardSize}, 200px)`;
+
+    setBoardEl(container);
+    const builtBoard = build(size, container);
+    boardData.push(...builtBoard);
+  }
+
+  const getData = function () {
+    return boardData;
   }
 
   const getSize = function () {
     return size;
   }
 
+  const setTiles = function (tilesArr) {
+    tiles = [...tilesArr];
+  }
+
+  const setData = function (data) {
+    boardData = [...data];
+  }
+
+  const setBoardEl = function (element) {
+    boardEl = element
+  }
+
+  const getApp = function () {
+    return app;
+  }
+
+  const getBoardEl = function () {
+    return boardEl;
+  }
+
+  const getTiles = function () {
+    return tiles;
+  }
+
+  const getTile = function (tileArg) {
+    console.log(tileArg.dataset)
+    const tiles = getTiles()
+    const tile = tiles.find((child) => {
+      if (child.id === tileArg.dataset.id) {
+        return child;
+      }
+    });
+
+    return tile;
+  }
+
+  const createTiles = function () {
+    const size = getSize();
+    const loopSize = size * size;
+    const createdTiles = []
+
+    for (let i = 0; i < loopSize; i++) {
+      const tile = playerFactory('.', 'tile'); // Blank tile.
+      createdTiles.push(tile);
+    }
+    setTiles(createdTiles);
+  }
+
+  const updateTile = function (tile) {
+    const tiles = getTiles();
+    const index = tiles.findIndex((child) => (child.id === tile.id));
+
+    tiles[index] = tile;
+    setTiles(tiles);
+  }
+
   // Builds the board, storing relevant data of each tile inside an array.
   //   Data such as player marker, index of the tile (row/column).
-  function build(boardSize) {
-    const tile = playerFactory('.', 'tile'); // Blank tile.
-    let tiles = [];
-    let index = 0;
+  function build(boardSize, container) {
+    app.textContent = '';
+    const newTileSet = [];
+    const newBoard = [];
+
+    createTiles();
+    const oldTileSet = getTiles();
+    let tileSetIndex = 0;
+
     for (let i = 0; i < boardSize; i++) {
+
       let row = [];
       for (let j = 0; j < boardSize; j++) {
+        const tileElm = document.createElement('div');
+        tileElm.classList.add('tile');
+        tileElm.dataset.id = oldTileSet[tileSetIndex].id;
+        container.appendChild(tileElm);
+
         const rowIndex = i;
         const colIndex = j;
 
         const tileObj = {
-          player: tile,
+          id: oldTileSet[tileSetIndex].id,
+          player: {
+            marker: oldTileSet[tileSetIndex].marker,
+            name: oldTileSet[tileSetIndex].name,
+          },
           row: rowIndex,
           col: colIndex,
-        }
-        row.push(tileObj);
-        index++;
-      }
-      tiles.push(row);
-    }
-    return tiles;
-  }
+          element: tileElm,
+        };
 
-  function init(boardSize = 3) {
-    size = boardSize;
-    const builtBoard = build(size);
-    board.push(...builtBoard);
+        row.push(tileObj);
+        newTileSet.push(tileObj);
+        tileSetIndex++;
+      }
+      newBoard.push(row);
+    }
+
+    setTiles(newTileSet);
+    return newBoard;
   }
 
   // Render the board as a string.
   //   Attaches a numbering system for readability.
-  function render() {
-    boardString = " ";
-    for (let i = 0; i < size; i++) {
-      boardString += ` ${i}|`; // Number columns
+  function render(parent, ...children) {
+    for (child of children) {
+      if (child.element) { parent.appendChild(child.element) }
+      else { parent.appendChild(child) }
     }
-
-    boardString += `\n`;
-
-    for (let i = 0; i < size; i++) {
-      boardString += `${i}-`; // Number rows
-      for (let j = 0; j < size; j++) {
-        boardString += `[${board[i][j].player.marker}]`;
-      }
-      boardString += `\n`
-    }
-
-    return boardString;
   }
 
-  function update(player, row, col) {
-    board[row][col] = { player, row, col };
-    build(size);
+  function updateData() {
+    const boardSize = getSize();
+    const tileSet = getTiles();
+    const newBoard = [];
+    let tileSetIndex = 0;
+
+    for (let i = 0; i < boardSize; i++) {
+      let row = [];
+      for (let j = 0; j < boardSize; j++) {
+        row.push(tileSet[tileSetIndex]);
+        tileSetIndex++;
+      }
+      newBoard.push(row);
+    }
+    setData(newBoard);
   }
 
   return {
     init,
-    get,
+    getData,
     getSize,
+    getTile,
+    getTiles,
+    getApp,
+    getBoardEl,
     render,
-    update,
+    updateData,
+    updateTile
   }
 })();
 
@@ -116,7 +205,7 @@ const gameState = (function () {
   const init = function (board, players) {
     attachBoard(board);
     addPlayers(players);
-    setCurrentPlayer({ player: players[0] });
+    setCurrentPlayer(players[0]);
   }
 
   const addPlayers = function (playersArg) {
@@ -129,7 +218,7 @@ const gameState = (function () {
     return players;
   }
 
-  function setCurrentPlayer({ player, flag }) {
+  function setCurrentPlayer(player, flag) {
     if (flag) {
       let playerIndex;
       players.findIndex((child, index) => {
@@ -157,32 +246,50 @@ const gameState = (function () {
 
   // Gamestate management
   const start = function () {
-    setCurrentPlayer({ player: players[0], flag: false });
-    console.log(board.render());
+    setCurrentPlayer(players[0])
+    getCurrentPlayer();
+    const board = gameBoard.getBoardEl();
+    const app = gameBoard.getApp();
+
+    board.addEventListener('click', selectTile);
+    gameBoard.render(app, board);
   }
 
-  const playTurn = function (row, col) {
-    const current = getCurrentPlayer();
-    console.log(current);
-    const filledFlag = isFilled(row, col);
-    let msg = '';
+  const selectTile = function (event) {
+    if (event.target.classList.contains('tile')) {
+      const oldTile = gameBoard.getTile(event.target);
+      const newTile = { ...oldTile };
+      const player = getCurrentPlayer();
 
-    if (!filledFlag) {
-      msg += `${current.name}: ${row}x${col}\n`
+      newTile.player = player;
+      newTile.element.innerText = player.marker;
 
-      board.update(current, row, col);
-      msg += board.render();
-      console.log(msg);
-
-      setCurrentPlayer({ player: current, flag: true });
-      return checkWinner(current, row, col);
-    } else {
-      throw Error(`${row}x${col}::Tile already filled!`);
+      if (!isFilled(oldTile)) {
+        gameBoard.updateTile(newTile);
+        gameBoard.updateData();
+        playTurn(newTile)
+      } else {
+        throw Error(`${tile.row}x${tile.col}::Tile already filled!`);
+      }
     }
   }
 
-  const isFilled = function (row, col) {
-    const tile = board.get()[row][col];
+  const playTurn = function (tile) {
+    const current = getCurrentPlayer();
+    setCurrentPlayer(current, true);
+
+    const row = tile.row;
+    const col = tile.col;
+    const winnerBool = checkWinner(current, row, col);
+
+    if (winnerBool) {
+      alert(`${current.name} won!`);
+      handleVictory();
+    }
+
+  }
+
+  const isFilled = function (tile) {
     if (tile.player.marker !== '.') {
       return true;
     }
@@ -190,11 +297,16 @@ const gameState = (function () {
     return false;
   }
 
-  const checkWinner = (current, row, col) => {
+  const checkWinner = function (current, row, col) {
     winState.setPlayer(current);
     const isWinner = winState.check(board, row, col);
 
     return isWinner;
+  }
+
+  const handleVictory = function () {
+    const container = gameBoard.getBoardEl();
+    container.removeEventListener('click', selectTile);
   }
 
   /* WIN STATE IIFE */
@@ -204,7 +316,7 @@ const gameState = (function () {
 
     // Gets relevant game info and packages it neatly
     const getState = function (board) {
-      const gameboard = board.get();
+      const gameboard = board.getData();
       const size = board.getSize();
       const player = getPlayer();
 
@@ -306,8 +418,6 @@ const gameState = (function () {
     getPlayers,
     addPlayers,
     start,
-    playTurn,
-    checkWinner,
   }
 })();
 
@@ -319,65 +429,22 @@ const gameState = (function () {
 ********************************/
 const gameSession = (function () {
 
-  // TODO:
-  //  Receive input of the user to 
-  //    start game, 
-  //    determine board size, 
-
   const init = function (players, size = 3) {
     play();
   }
 
   const play = function () {
-    const players = addPlayers();
-    gameBoard.init();
+    const one = playerFactory('x', 'hunter');
+    const two = playerFactory('o', 'karma');
+    const players = [one, two];
+    gameBoard.init(3);
     gameState.init(gameBoard, players);
     gameState.start();
-
-    turnPrompt();
   }
 
-  const turnPrompt = function (repeat) {
-    const index = prompt('Which tile? (ex: 0x0)');
-    const indexArr = index.split('x');
-    const row = indexArr[0];
-    const col = indexArr[1];
-    const isWinner = gameState.playTurn(row, col);
-
-    if (isWinner) {
-      return console.log("Winner");
-    } else {
-      turnPrompt(repeat);
-    }
-  }
 
   const addPlayers = function () {
-    let addingPlayerFlag = true;
-    const players = [];
 
-    while (addingPlayerFlag) {
-      if (players.length < 2) {
-        const name = prompt('Player Name:');
-        if (name === null) {
-          addingPlayerFlag = false;
-          break;
-        }
-
-        const marker = prompt('Player Marker: (ex: X/O)');
-        if (marker === null) {
-          addingPlayerFlag = false;
-          break;
-        }
-
-        const player = playerFactory(marker, name)
-        players.push(player);
-
-      } else {
-        addingPlayerFlag = false;
-      }
-    }
-
-    return players;
   }
 
   return {

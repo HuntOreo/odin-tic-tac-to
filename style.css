@@ -3,7 +3,26 @@
   src: url('./misc/fonts/NatoSans.ttf') format('truetype');
 }
 
+html, body, .app {
+  height: 100%;
+}
+
 body {
   font-family: "NatoSans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+.app {
+  height: 100%;
+}
+
+.board {
+  display: grid;
+  gap: 10px;
+}
+
+.tile {
+  background-color: blue;
+  height: 200px;
+  width: 200px;
+  color: white;
+}
