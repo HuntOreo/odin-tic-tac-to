@@ -76,7 +76,6 @@ const gameBoard = (function () {
       }
     });
 
-    console.log(tile);
     return tile;
   }
 
@@ -92,8 +91,11 @@ const gameBoard = (function () {
     setTiles(createdTiles);
   }
 
-  const updateTile = function (tile, index) {
+  const updateTile = function (tile) {
     const tiles = getTiles();
+    const index = tiles.find((child, index) => {
+      if (child.id === tile.id) return index;
+    });
     tiles[index] = tile;
     setTiles(tiles);
   }
@@ -201,7 +203,7 @@ const gameState = (function () {
     return players;
   }
 
-  function setCurrentPlayer({ player, flag }) {
+  function setCurrentPlayer(player, flag) {
     if (flag) {
       let playerIndex;
       players.findIndex((child, index) => {
@@ -230,12 +232,17 @@ const gameState = (function () {
   // Gamestate management
   const start = function () {
     setCurrentPlayer(players[0])
+    getCurrentPlayer();
     const board = gameBoard.getBoardEl();
     const app = gameBoard.getApp();
 
     board.addEventListener('click', (event) => {
       if (event.target.classList.contains('tile')) {
-        gameBoard.getTile(event.target);
+        const tile = gameBoard.getTile(event.target);
+        const player = getCurrentPlayer();
+        tile.player = player;
+        tile.element.innerText = player.marker;
+        gameBoard.updateTile(tile);
       }
     })
     gameBoard.render(app, board);
@@ -398,7 +405,7 @@ const gameSession = (function () {
     const one = playerFactory('x', 'hunter');
     const two = playerFactory('o', 'karma');
     const players = [one, two];
-    gameBoard.init(4);
+    gameBoard.init(3);
     gameState.init(gameBoard, players);
     gameState.start();
 
