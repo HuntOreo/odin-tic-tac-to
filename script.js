@@ -33,6 +33,8 @@ const gameBoard = (function () {
     size = boardSize;
     const container = document.createElement('div');
     container.classList.add('board');
+    container.style.gridTemplateColumns = `repeat(${boardSize}, 200px)`
+    container.style.gridTemplateRows = `repeat(${boardSize}, 200px)`
     setBoardEl(container);
     const builtBoard = build(size, container);
     boardData.push(...builtBoard);
@@ -396,7 +398,7 @@ const gameSession = (function () {
     const one = playerFactory('x', 'hunter');
     const two = playerFactory('o', 'karma');
     const players = [one, two];
-    gameBoard.init(gameBoard.getSize(),);
+    gameBoard.init(4);
     gameState.init(gameBoard, players);
     gameState.start();
 
