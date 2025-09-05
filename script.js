@@ -52,6 +52,10 @@ const gameBoard = (function () {
     tiles = [...tilesArr];
   }
 
+  const setData = function (data) {
+    boardData = [...data];
+  }
+
   const setBoardEl = function (element) {
     boardEl = element
   }
@@ -93,9 +97,8 @@ const gameBoard = (function () {
 
   const updateTile = function (tile) {
     const tiles = getTiles();
-    const index = tiles.find((child, index) => {
-      if (child.id === tile.id) return index;
-    });
+    const index = tiles.findIndex((child) => (child.id === tile.id));
+
     tiles[index] = tile;
     setTiles(tiles);
   }
@@ -108,7 +111,7 @@ const gameBoard = (function () {
     const newBoard = [];
 
     createTiles();
-    const tileSet = getTiles();
+    const oldTileSet = getTiles();
     let tileSetIndex = 0;
 
     for (let i = 0; i < boardSize; i++) {
@@ -117,17 +120,17 @@ const gameBoard = (function () {
       for (let j = 0; j < boardSize; j++) {
         const tileElm = document.createElement('div');
         tileElm.classList.add('tile');
-        tileElm.dataset.id = tileSet[tileSetIndex].id;
+        tileElm.dataset.id = oldTileSet[tileSetIndex].id;
         container.appendChild(tileElm);
 
         const rowIndex = i;
         const colIndex = j;
 
         const tileObj = {
-          id: tileSet[tileSetIndex].id,
+          id: oldTileSet[tileSetIndex].id,
           player: {
-            marker: tileSet[tileSetIndex].marker,
-            name: tileSet[tileSetIndex].name,
+            marker: oldTileSet[tileSetIndex].marker,
+            name: oldTileSet[tileSetIndex].name,
           },
           row: rowIndex,
           col: colIndex,
@@ -154,10 +157,21 @@ const gameBoard = (function () {
     }
   }
 
-  function update(player, row, col) {
-    board[row][col] = { player, row, col };
-    const element = getBoardEl();
-    console.log(build(size, element));
+  function updateData() {
+    const boardSize = getSize();
+    const tileSet = getTiles();
+    const newBoard = [];
+    let tileSetIndex = 0;
+
+    for (let i = 0; i < boardSize; i++) {
+      let row = [];
+      for (let j = 0; j < boardSize; j++) {
+        row.push(tileSet[tileSetIndex]);
+        tileSetIndex++;
+      }
+      newBoard.push(row);
+    }
+    setData(newBoard);
   }
 
   return {
@@ -170,7 +184,7 @@ const gameBoard = (function () {
     getApp,
     setBoardEl,
     render,
-    update,
+    updateData,
     updateTile
   }
 })();
@@ -191,7 +205,7 @@ const gameState = (function () {
   const init = function (board, players) {
     attachBoard(board);
     addPlayers(players);
-    setCurrentPlayer({ player: players[0] });
+    setCurrentPlayer(players[0]);
   }
 
   const addPlayers = function (playersArg) {
@@ -240,12 +254,20 @@ const gameState = (function () {
     board.addEventListener('click', (event) => {
       if (noWinner) {
         if (event.target.classList.contains('tile')) {
-          const tile = gameBoard.getTile(event.target);
+          const oldTile = gameBoard.getTile(event.target);
+          const newTile = { ...oldTile };
           const player = getCurrentPlayer();
-          playTurn(tile)
-          tile.player = player;
-          tile.element.innerText = player.marker;
-          gameBoard.updateTile(tile);
+
+          newTile.player = player;
+          newTile.element.innerText = player.marker;
+
+          if (!isFilled(oldTile)) {
+            gameBoard.updateTile(newTile);
+            gameBoard.updateData();
+            playTurn(newTile)
+          } else {
+            throw Error(`${tile.row}x${tile.col}::Tile already filled!`);
+          }
         }
       }
     })
@@ -254,20 +276,18 @@ const gameState = (function () {
 
   const playTurn = function (tile) {
     const current = getCurrentPlayer();
-    const filledFlag = isFilled(tile);
-
-    if (!filledFlag) {
-      setCurrentPlayer({ player: current, flag: true });
-      const row = tile.row;
-      const col = tile.col;
-      return checkWinner(current, row, col);
-    } else {
-      throw Error(`${tile.row}x${tile.col}::Tile already filled!`);
+    setCurrentPlayer(current, true);
+    const row = tile.row;
+    const col = tile.col;
+    const winnerBool = checkWinner(current, row, col);
+    // console.log(winnerBool);
+    if (winnerBool) {
+      alert(`${current.name} won!`);
     }
+
   }
 
   const isFilled = function (tile) {
-    console.log(tile);
     if (tile.player.marker !== '.') {
       return true;
     }
@@ -289,7 +309,7 @@ const gameState = (function () {
 
     // Gets relevant game info and packages it neatly
     const getState = function (board) {
-      const gameboard = board.get();
+      const gameboard = board.getData();
       const size = board.getSize();
       const player = getPlayer();
 
