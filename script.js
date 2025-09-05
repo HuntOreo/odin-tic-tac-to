@@ -74,6 +74,7 @@ const gameBoard = (function () {
   }
 
   const getTile = function (tileArg) {
+    console.log(tileArg.dataset)
     const tiles = getTiles()
     const tile = tiles.find((child) => {
       if (child.id === tileArg.dataset.id) {
@@ -250,38 +251,40 @@ const gameState = (function () {
     const board = gameBoard.getBoardEl();
     const app = gameBoard.getApp();
 
-    board.addEventListener('click', (event) => {
-      if (event.target.classList.contains('tile')) selectTile(event.target);
-    })
+    board.addEventListener('click', selectTile);
     gameBoard.render(app, board);
   }
 
-  const selectTile = function (tile) {
-    const oldTile = gameBoard.getTile(tile);
-    const newTile = { ...oldTile };
-    const player = getCurrentPlayer();
+  const selectTile = function (event) {
+    if (event.target.classList.contains('tile')) {
+      const oldTile = gameBoard.getTile(event.target);
+      const newTile = { ...oldTile };
+      const player = getCurrentPlayer();
 
-    newTile.player = player;
-    newTile.element.innerText = player.marker;
+      newTile.player = player;
+      newTile.element.innerText = player.marker;
 
-    if (!isFilled(oldTile)) {
-      gameBoard.updateTile(newTile);
-      gameBoard.updateData();
-      playTurn(newTile)
-    } else {
-      throw Error(`${tile.row}x${tile.col}::Tile already filled!`);
+      if (!isFilled(oldTile)) {
+        gameBoard.updateTile(newTile);
+        gameBoard.updateData();
+        playTurn(newTile)
+      } else {
+        throw Error(`${tile.row}x${tile.col}::Tile already filled!`);
+      }
     }
   }
 
   const playTurn = function (tile) {
     const current = getCurrentPlayer();
     setCurrentPlayer(current, true);
+
     const row = tile.row;
     const col = tile.col;
     const winnerBool = checkWinner(current, row, col);
-    // console.log(winnerBool);
+
     if (winnerBool) {
       alert(`${current.name} won!`);
+      handleVictory();
     }
 
   }
@@ -294,11 +297,16 @@ const gameState = (function () {
     return false;
   }
 
-  const checkWinner = (current, row, col) => {
+  const checkWinner = function (current, row, col) {
     winState.setPlayer(current);
     const isWinner = winState.check(board, row, col);
 
     return isWinner;
+  }
+
+  const handleVictory = function () {
+    const container = gameBoard.getBoardEl();
+    container.removeEventListener('click', selectTile);
   }
 
   /* WIN STATE IIFE */
@@ -420,6 +428,7 @@ const gameState = (function () {
 *
 ********************************/
 const gameSession = (function () {
+
   const init = function (players, size = 3) {
     play();
   }
