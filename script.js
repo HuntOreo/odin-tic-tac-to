@@ -33,8 +33,9 @@ const gameBoard = (function () {
     size = boardSize;
     const container = document.createElement('div');
     container.classList.add('board');
-    container.style.gridTemplateColumns = `repeat(${boardSize}, 200px)`
-    container.style.gridTemplateRows = `repeat(${boardSize}, 200px)`
+    container.style.gridTemplateColumns = `repeat(${boardSize}, 200px)`;
+    container.style.gridTemplateRows = `repeat(${boardSize}, 200px)`;
+
     setBoardEl(container);
     const builtBoard = build(size, container);
     boardData.push(...builtBoard);
@@ -180,9 +181,8 @@ const gameBoard = (function () {
     getSize,
     getTile,
     getTiles,
-    getBoardEl,
     getApp,
-    setBoardEl,
+    getBoardEl,
     render,
     updateData,
     updateTile
@@ -199,7 +199,6 @@ const gameState = (function () {
   let players = [];
   let currentPlayer = {};
   let board;
-  let noWinner = true;
 
   // General
   const init = function (board, players) {
@@ -252,26 +251,26 @@ const gameState = (function () {
     const app = gameBoard.getApp();
 
     board.addEventListener('click', (event) => {
-      if (noWinner) {
-        if (event.target.classList.contains('tile')) {
-          const oldTile = gameBoard.getTile(event.target);
-          const newTile = { ...oldTile };
-          const player = getCurrentPlayer();
-
-          newTile.player = player;
-          newTile.element.innerText = player.marker;
-
-          if (!isFilled(oldTile)) {
-            gameBoard.updateTile(newTile);
-            gameBoard.updateData();
-            playTurn(newTile)
-          } else {
-            throw Error(`${tile.row}x${tile.col}::Tile already filled!`);
-          }
-        }
-      }
+      if (event.target.classList.contains('tile')) selectTile(event.target);
     })
     gameBoard.render(app, board);
+  }
+
+  const selectTile = function (tile) {
+    const oldTile = gameBoard.getTile(tile);
+    const newTile = { ...oldTile };
+    const player = getCurrentPlayer();
+
+    newTile.player = player;
+    newTile.element.innerText = player.marker;
+
+    if (!isFilled(oldTile)) {
+      gameBoard.updateTile(newTile);
+      gameBoard.updateData();
+      playTurn(newTile)
+    } else {
+      throw Error(`${tile.row}x${tile.col}::Tile already filled!`);
+    }
   }
 
   const playTurn = function (tile) {
@@ -411,8 +410,6 @@ const gameState = (function () {
     getPlayers,
     addPlayers,
     start,
-    playTurn,
-    checkWinner,
   }
 })();
 
@@ -434,27 +431,11 @@ const gameSession = (function () {
     gameBoard.init(3);
     gameState.init(gameBoard, players);
     gameState.start();
-
-    // turnPrompt();
   }
 
 
   const addPlayers = function () {
 
-  }
-
-  const turnPrompt = function (repeat) {
-
-    const indexArr = index.split('x');
-    const row = indexArr[0];
-    const col = indexArr[1];
-    const isWinner = gameState.playTurn(row, col);
-
-    if (isWinner) {
-      return console.log("Winner");
-    } else {
-      turnPrompt(repeat);
-    }
   }
 
   return {
