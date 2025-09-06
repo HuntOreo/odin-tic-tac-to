@@ -74,8 +74,7 @@ const gameBoard = (function () {
   }
 
   const getTile = function (tileArg) {
-    console.log(tileArg.dataset)
-    const tiles = getTiles()
+    const tiles = getTiles();
     const tile = tiles.find((child) => {
       if (child.id === tileArg.dataset.id) {
         return child;
@@ -260,30 +259,34 @@ const gameState = (function () {
       const oldTile = gameBoard.getTile(event.target);
       const newTile = { ...oldTile };
       const player = getCurrentPlayer();
-
-      newTile.player = player;
-      newTile.element.innerText = player.marker;
-
+      const content = document.createElement('div');
       if (!isFilled(oldTile)) {
+      
+        content.classList.add('content');
+        content.innerText = player.marker;
+        newTile.player = player;
+        newTile.element.appendChild(content);
+
         gameBoard.updateTile(newTile);
         gameBoard.updateData();
         playTurn(newTile)
       } else {
-        throw Error(`${tile.row}x${tile.col}::Tile already filled!`);
+        throw Error(`${oldTile.row}x${oldTile.col}::Tile already filled!`);
       }
     }
   }
 
   const playTurn = function (tile) {
-    const current = getCurrentPlayer();
-    setCurrentPlayer(current, true);
+    const player = getCurrentPlayer();
+    setCurrentPlayer(player, true);
 
     const row = tile.row;
     const col = tile.col;
-    const winnerBool = checkWinner(current, row, col);
+    const winnerBool = checkWinner(player, row, col);
 
     if (winnerBool) {
-      alert(`${current.name} won!`);
+      const scoreBoard = gameSession.getScoreBoard();
+      scoreBoard.textContent = `${player.name} wins!`;
       handleVictory();
     }
 
@@ -428,6 +431,7 @@ const gameState = (function () {
 *
 ********************************/
 const gameSession = (function () {
+  let scoreBoardElm = document.querySelector('.scoreboard');
 
   const init = function (players, size = 3) {
     play();
@@ -447,9 +451,14 @@ const gameSession = (function () {
 
   }
 
+  const getScoreBoard = function () {
+    return scoreBoardElm;
+  }
+
   return {
     init,
-    play
+    play,
+    getScoreBoard,
   }
 })();
 

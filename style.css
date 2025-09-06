@@ -9,10 +9,15 @@ html, body, .app {
 
 body {
   font-family: "NatoSans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  display: grid;
+  grid-template-rows: 150px;
 }
 
 .app {
   height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .board {
@@ -21,8 +26,28 @@ body {
 }
 
 .tile {
-  background-color: blue;
   height: 200px;
   width: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: blue;
   color: white;
+  font-size: 6rem;
+}
+
+.tile > .content {
+  display: flex;
+  align-items: center;
+}
+
+.scoreboard {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  text-align: center;
+  font-size: 4rem;
 }
