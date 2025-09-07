@@ -151,9 +151,15 @@ const gameBoard = (function () {
 
   // Render the board as a string.
   //   Attaches a numbering system for readability.
-  function render(parent, ...children) {
+  function render(parent, append,...children) {
     for (child of children) {
-      if (child.element) { parent.appendChild(child.element) }
+      if (child.element) { 
+        if (append) { 
+          parent.appendChild(child.element); 
+        } else {
+          parent.after(child.element);
+        }
+      }
       else { parent.appendChild(child) }
     }
   }
@@ -251,7 +257,7 @@ const gameState = (function () {
     const app = gameBoard.getApp();
 
     board.addEventListener('click', selectTile);
-    gameBoard.render(app, board);
+    gameBoard.render(app, false, board);
   }
 
   const selectTile = function (event) {
@@ -259,13 +265,20 @@ const gameState = (function () {
       const oldTile = gameBoard.getTile(event.target);
       const newTile = { ...oldTile };
       const player = getCurrentPlayer();
-      const content = document.createElement('div');
+      const content = document.createElement('p');
       if (!isFilled(oldTile)) {
       
         content.classList.add('content');
-        content.innerText = player.marker;
+        
+        setTimeout(() => {
+          content.innerText = player.marker;
+          content.style.opacity = '1';
+        }, 1); // Small delay to allow initial opacity to be set
+
         newTile.player = player;
         newTile.element.appendChild(content);
+        
+
 
         gameBoard.updateTile(newTile);
         gameBoard.updateData();
@@ -438,8 +451,8 @@ const gameSession = (function () {
   }
 
   const play = function () {
-    const one = playerFactory('x', 'hunter');
-    const two = playerFactory('o', 'karma');
+    const one = playerFactory('x', 'Hunter');
+    const two = playerFactory('o', 'Karma');
     const players = [one, two];
     gameBoard.init(3);
     gameState.init(gameBoard, players);
