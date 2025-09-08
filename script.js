@@ -450,6 +450,7 @@ const gameSession = (function () {
   const init = function () {
     submitForm.addEventListener('click', addPlayers);
     buttons.children[0].addEventListener('click', restart);
+    buttons.children[1].addEventListener('click', quit);
   }
 
   const getScoreBoard = function () {
@@ -472,16 +473,26 @@ const gameSession = (function () {
     const playerTwo = playerFactory(markers[1], names[1]);
     players.push(playerOne, playerTwo);
 
+    hideBoard();
+
+    play();
+  }
+
+  const hideBoard = function () {
     gameBoard.getApp().classList.toggle('hidden');
     addPlayersForm.parentElement.classList.toggle('hidden');
     buttons.classList.toggle('hidden');
-
-    play();
   }
 
   const restart = function () {
     getScoreBoard().classList.add('hidden');
     play();
+  }
+
+  const quit = function () {
+    restart();
+    hideBoard();
+    buttons.classList.add('hidden');
   }
 
   return {
