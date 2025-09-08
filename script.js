@@ -245,6 +245,10 @@ const gameState = (function () {
     return currentPlayer;
   }
 
+  const resetPlayers = function () {
+    players = [];
+  }
+
   const attachBoard = function (boardArg) {
     board = boardArg;
   }
@@ -296,7 +300,7 @@ const gameState = (function () {
 
     if (winnerBool) {
       const scoreBoard = gameSession.getScoreBoard();
-      scoreBoard.textContent = `${player.name} wins!`;
+      scoreBoard.children[0].textContent = `${player.name} wins!`;
       scoreBoard.classList.remove('hidden');
       handleVictory();
     }
@@ -348,6 +352,14 @@ const gameState = (function () {
       return current;
     }
 
+    const highlight = function (set) {
+      for (tile of set) {
+        const { element } = tile;
+        element.style.backgroundColor = 'lightgreen';
+        element.style.color = 'black';
+      }
+    }
+
     // Receive a tile set and inspect for matching markers
     const checkTiles = function (tiles, state) {
       let score = 0;
@@ -368,7 +380,11 @@ const gameState = (function () {
       const { gameboard } = state;
       const candidate = gameboard[index];
 
-      return checkTiles(candidate, state);
+      const isWinner = checkTiles(candidate, state);
+      if (isWinner) {
+        highlight(candidate);
+      }
+      return isWinner;
     }
 
     const col = function (board, index) {
@@ -379,7 +395,11 @@ const gameState = (function () {
       for (let i = 0; i < size; i++) {
         candidate.push(gameboard[i][index]);
       }
-      return checkTiles(candidate, state);
+      const isWinner = checkTiles(candidate, state);
+      if (isWinner) {
+        highlight(candidate);
+      }
+      return isWinner;
     }
 
     const diagonal = function (board, dirFlag) {
@@ -396,7 +416,11 @@ const gameState = (function () {
           candidate.push(gameboard[i][i]);
         }
       }
-      return checkTiles(candidate, state);
+      const isWinner = checkTiles(candidate, state);
+      if (isWinner) {
+        highlight(candidate);
+      }
+      return isWinner;
     }
 
     // Handle searching for win condition
@@ -430,6 +454,7 @@ const gameState = (function () {
     init,
     getPlayers,
     addPlayers,
+    resetPlayers,
     start,
   }
 })();
@@ -445,7 +470,7 @@ const gameSession = (function () {
   const buttons = document.querySelector('.buttons');
   const addPlayersForm = document.querySelector('#add-players');
   const submitForm = addPlayersForm.querySelector('button');
-  const players = [];
+  let players = []
 
   const init = function () {
     submitForm.addEventListener('click', addPlayers);
@@ -464,17 +489,20 @@ const gameSession = (function () {
   }
 
   const addPlayers = function (event) {
-    event.preventDefault()
-    const data = new FormData(addPlayersForm);
-    const names = data.getAll('name');
-    const markers = data.getAll('marker');
+    if (!checkRequired()) {
+      event.preventDefault();
+      const data = new FormData(addPlayersForm);
+      const names = data.getAll('name');
+      const markers = data.getAll('marker');
 
-    const playerOne = playerFactory(markers[0], names[0]);
-    const playerTwo = playerFactory(markers[1], names[1]);
-    players.push(playerOne, playerTwo);
+      const playerOne = playerFactory(markers[0], names[0]);
+      const playerTwo = playerFactory(markers[1], names[1]);
+      const arr = [playerOne, playerTwo]
+      players = [...arr];
 
-    hideBoard();
-    play();
+      hideBoard();
+      play();
+    }
   }
 
   const restart = function () {
@@ -486,6 +514,14 @@ const gameSession = (function () {
     restart();
     hideBoard();
     buttons.classList.add('hidden');
+
+    scoreBoardElm.children[0].textContent = '';
+    gameState.resetPlayers();
+    resetPlayers();
+  }
+
+  const resetPlayers = function () {
+    players = new Array();
   }
 
   const hideBoard = function () {
@@ -494,9 +530,20 @@ const gameSession = (function () {
     buttons.classList.toggle('hidden');
   }
 
+  const checkRequired = function () {
+    let emptyRequired = false;
+    const inputs = addPlayersForm.querySelectorAll('input[required]');
+    for (input of inputs) {
+      if (input.value === "") {
+        emptyRequired = true;
+      }
+    }
+
+    return emptyRequired;
+  }
+
   return {
     init,
-    play,
     getScoreBoard,
   }
 })();

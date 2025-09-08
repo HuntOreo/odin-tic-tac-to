@@ -10,30 +10,36 @@
     <title>Tic Tac Toe</title>
   </head>
   <body>
-    <div class="scoreboard"></div>
+    <div class="scoreboard hidden">
+      <h1></h1>
+    </div>
     <div class="menu">
       <form action="" id="add-players">
         <fieldset>
           <legend>Player One</legend>
-          <div class="wrapper">
-            <label for="playerOneName">Name</label>
-            <input type="text" name="name" id="playerOneName" value="Player One" required>
-          </div>
-          <div class="wrapper">
-            <label for="playerOneMarker">Marker</label>
-            <input type="text" name="marker" id="playerOneMarker" value="X" required>
+          <div class="container">
+            <div class="wrapper">
+              <label for="playerOneName">Name</label>
+              <input type="text" name="name" id="playerOneName" value="Player One" required>
+            </div>
+            <div class="wrapper">
+              <label for="playerOneMarker">Marker</label>
+              <input type="text" name="marker" id="playerOneMarker" value="X" required>
+            </div>
           </div>
         </fieldset>
 
         <fieldset>
           <legend>Player Two</legend>
-          <div class="wrapper">
-            <label for="playerTwoName">Name</label>
-            <input type="text" name="name" id="playerTwoName" value="Player Two" required>
-          </div>
-          <div class="wrapper">
-            <label for="playerTwoMarker">Marker</label>
-            <input type="text" name="marker" id="playerTwoMarker" value="O" required>
+          <div class="container">
+            <div class="wrapper">
+              <label for="playerTwoName">Name</label>
+              <input type="text" name="name" id="playerTwoName" value="Player Two" required>
+            </div>
+            <div class="wrapper">
+              <label for="playerTwoMarker">Marker</label>
+              <input type="text" name="marker" id="playerTwoMarker" value="O" required>
+            </div>
           </div>
         </fieldset>
 
