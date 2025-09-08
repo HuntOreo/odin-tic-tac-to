@@ -214,7 +214,6 @@ const gameState = (function () {
   }
 
   const addPlayers = function (playersArg) {
-    console.log(playersArg);
     for (player of playersArg) {
       players.push(player);
     }
@@ -327,7 +326,6 @@ const gameState = (function () {
     container.removeEventListener('click', selectTile);
   }
 
-
   /* WIN STATE IIFE */
   /* Handle checks for winning move */
   const winState = (function () {
@@ -354,6 +352,14 @@ const gameState = (function () {
       return current;
     }
 
+    const highlight = function (set) {
+      for (tile of set) {
+        const { element } = tile;
+        element.style.backgroundColor = 'lightgreen';
+        element.style.color = 'black';
+      }
+    }
+
     // Receive a tile set and inspect for matching markers
     const checkTiles = function (tiles, state) {
       let score = 0;
@@ -374,7 +380,11 @@ const gameState = (function () {
       const { gameboard } = state;
       const candidate = gameboard[index];
 
-      return checkTiles(candidate, state);
+      const isWinner = checkTiles(candidate, state);
+      if (isWinner) {
+        highlight(candidate);
+      }
+      return isWinner;
     }
 
     const col = function (board, index) {
@@ -385,7 +395,11 @@ const gameState = (function () {
       for (let i = 0; i < size; i++) {
         candidate.push(gameboard[i][index]);
       }
-      return checkTiles(candidate, state);
+      const isWinner = checkTiles(candidate, state);
+      if (isWinner) {
+        highlight(candidate);
+      }
+      return isWinner;
     }
 
     const diagonal = function (board, dirFlag) {
@@ -402,7 +416,11 @@ const gameState = (function () {
           candidate.push(gameboard[i][i]);
         }
       }
-      return checkTiles(candidate, state);
+      const isWinner = checkTiles(candidate, state);
+      if (isWinner) {
+        highlight(candidate);
+      }
+      return isWinner;
     }
 
     // Handle searching for win condition
@@ -481,7 +499,6 @@ const gameSession = (function () {
       const playerTwo = playerFactory(markers[1], names[1]);
       const arr = [playerOne, playerTwo]
       players = [...arr];
-      console.log(players);
 
       hideBoard();
       play();
