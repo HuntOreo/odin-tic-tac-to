@@ -465,17 +465,19 @@ const gameSession = (function () {
   }
 
   const addPlayers = function (event) {
-    event.preventDefault()
-    const data = new FormData(addPlayersForm);
-    const names = data.getAll('name');
-    const markers = data.getAll('marker');
+    if (!checkRequired()) {
+      event.preventDefault()
+      const data = new FormData(addPlayersForm);
+      const names = data.getAll('name');
+      const markers = data.getAll('marker');
 
-    const playerOne = playerFactory(markers[0], names[0]);
-    const playerTwo = playerFactory(markers[1], names[1]);
-    players.push(playerOne, playerTwo);
+      const playerOne = playerFactory(markers[0], names[0]);
+      const playerTwo = playerFactory(markers[1], names[1]);
+      players.push(playerOne, playerTwo);
 
-    hideBoard();
-    play();
+      hideBoard();
+      play();
+    }
   }
 
   const restart = function () {
@@ -493,6 +495,18 @@ const gameSession = (function () {
     gameBoard.getApp().classList.toggle('hidden');
     addPlayersForm.parentElement.classList.toggle('hidden');
     buttons.classList.toggle('hidden');
+  }
+
+  const checkRequired = function () {
+    let emptyRequired = false;
+    const inputs = addPlayersForm.querySelectorAll('input[required]');
+    for (input of inputs) {
+      if (input.value === "") {
+        emptyRequired = true;
+      }
+    }
+
+    return emptyRequired;
   }
 
   return {
