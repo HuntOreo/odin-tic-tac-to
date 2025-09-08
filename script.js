@@ -252,7 +252,6 @@ const gameState = (function () {
   // Gamestate management
   const start = function () {
     setCurrentPlayer(players[0])
-    getCurrentPlayer();
     const board = gameBoard.getBoardEl();
     const app = gameBoard.getApp();
 
@@ -278,8 +277,6 @@ const gameState = (function () {
         newTile.player = player;
         newTile.element.appendChild(content);
 
-
-
         gameBoard.updateTile(newTile);
         gameBoard.updateData();
         playTurn(newTile)
@@ -300,9 +297,9 @@ const gameState = (function () {
     if (winnerBool) {
       const scoreBoard = gameSession.getScoreBoard();
       scoreBoard.textContent = `${player.name} wins!`;
+      scoreBoard.classList.remove('hidden');
       handleVictory();
     }
-
   }
 
   const isFilled = function (tile) {
@@ -452,6 +449,11 @@ const gameSession = (function () {
 
   const init = function () {
     submitForm.addEventListener('click', addPlayers);
+    buttons.children[0].addEventListener('click', restart);
+  }
+
+  const getScoreBoard = function () {
+    return scoreBoardElm;
   }
 
   const play = function () {
@@ -477,8 +479,9 @@ const gameSession = (function () {
     play();
   }
 
-  const getScoreBoard = function () {
-    return scoreBoardElm;
+  const restart = function () {
+    getScoreBoard().classList.add('hidden');
+    play();
   }
 
   return {
