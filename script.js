@@ -33,8 +33,8 @@ const gameBoard = (function () {
     size = boardSize;
     const container = document.createElement('div');
     container.classList.add('board');
-    container.style.gridTemplateColumns = `repeat(${boardSize}, 200px)`;
-    container.style.gridTemplateRows = `repeat(${boardSize}, 200px)`;
+    container.style.gridTemplateColumns = `repeat(${boardSize}, clamp(90px, 20vw, 200px))`;
+    container.style.gridTemplateRows = `repeat(${boardSize}, clamp(90px, 20vw, 200px))`;
 
     setBoardEl(container);
     const builtBoard = build(size, container);
@@ -151,11 +151,11 @@ const gameBoard = (function () {
 
   // Render the board as a string.
   //   Attaches a numbering system for readability.
-  function render(parent, append,...children) {
+  function render(parent, append, ...children) {
     for (child of children) {
-      if (child.element) { 
-        if (append) { 
-          parent.appendChild(child.element); 
+      if (child.element) {
+        if (append) {
+          parent.appendChild(child.element);
         } else {
           parent.after(child.element);
         }
@@ -267,9 +267,9 @@ const gameState = (function () {
       const player = getCurrentPlayer();
       const content = document.createElement('p');
       if (!isFilled(oldTile)) {
-      
+
         content.classList.add('content');
-        
+
         setTimeout(() => {
           content.innerText = player.marker;
           content.style.opacity = '1';
@@ -277,7 +277,7 @@ const gameState = (function () {
 
         newTile.player = player;
         newTile.element.appendChild(content);
-        
+
 
 
         gameBoard.updateTile(newTile);
