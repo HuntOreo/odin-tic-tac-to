@@ -368,7 +368,7 @@ const gameState = (function () {
           score++;
         }
       }
-      if (score === state.size) {
+      if (score == state.size) {
         return true;
       }
       return false;
@@ -471,6 +471,7 @@ const gameSession = (function () {
   const addPlayersForm = document.querySelector('#add-players');
   const submitForm = addPlayersForm.querySelector('button');
   let players = []
+  let size = 3;
 
   const init = function () {
     submitForm.addEventListener('click', addPlayers);
@@ -483,7 +484,7 @@ const gameSession = (function () {
   }
 
   const play = function () {
-    gameBoard.init();
+    gameBoard.init(size);
     gameState.init(gameBoard, players);
     gameState.start();
   }
@@ -492,6 +493,7 @@ const gameSession = (function () {
     if (!checkRequired()) {
       event.preventDefault();
       const data = new FormData(addPlayersForm);
+      const sizeData = data.get('size');
       const names = data.getAll('name');
       const markers = data.getAll('marker');
 
@@ -500,14 +502,16 @@ const gameSession = (function () {
       const arr = [playerOne, playerTwo]
       players = [...arr];
 
+      size = sizeData
+
       hideBoard();
-      play();
+      play(size);
     }
   }
 
   const restart = function () {
     getScoreBoard().classList.add('hidden');
-    play();
+    play(size);
   }
 
   const quit = function () {
