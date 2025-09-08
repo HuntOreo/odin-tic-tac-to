@@ -474,14 +474,7 @@ const gameSession = (function () {
     players.push(playerOne, playerTwo);
 
     hideBoard();
-
     play();
-  }
-
-  const hideBoard = function () {
-    gameBoard.getApp().classList.toggle('hidden');
-    addPlayersForm.parentElement.classList.toggle('hidden');
-    buttons.classList.toggle('hidden');
   }
 
   const restart = function () {
@@ -493,6 +486,12 @@ const gameSession = (function () {
     restart();
     hideBoard();
     buttons.classList.add('hidden');
+  }
+
+  const hideBoard = function () {
+    gameBoard.getApp().classList.toggle('hidden');
+    addPlayersForm.parentElement.classList.toggle('hidden');
+    buttons.classList.toggle('hidden');
   }
 
   return {
