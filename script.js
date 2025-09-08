@@ -296,7 +296,8 @@ const gameState = (function () {
 
     if (winnerBool) {
       const scoreBoard = gameSession.getScoreBoard();
-      scoreBoard.textContent = `${player.name} wins!`;
+      console.log(scoreBoard.lastChild);
+      scoreBoard.children[0].textContent = `${player.name} wins!`;
       scoreBoard.classList.remove('hidden');
       handleVictory();
     }
@@ -496,7 +497,6 @@ const gameSession = (function () {
 
   return {
     init,
-    play,
     getScoreBoard,
   }
 })();
