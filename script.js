@@ -214,6 +214,7 @@ const gameState = (function () {
   }
 
   const addPlayers = function (playersArg) {
+    console.log(playersArg);
     for (player of playersArg) {
       players.push(player);
     }
@@ -243,6 +244,10 @@ const gameState = (function () {
 
   function getCurrentPlayer() {
     return currentPlayer;
+  }
+
+  const resetPlayers = function () {
+    players = [];
   }
 
   const attachBoard = function (boardArg) {
@@ -296,7 +301,6 @@ const gameState = (function () {
 
     if (winnerBool) {
       const scoreBoard = gameSession.getScoreBoard();
-      console.log(scoreBoard.lastChild);
       scoreBoard.children[0].textContent = `${player.name} wins!`;
       scoreBoard.classList.remove('hidden');
       handleVictory();
@@ -322,6 +326,7 @@ const gameState = (function () {
     const container = gameBoard.getBoardEl();
     container.removeEventListener('click', selectTile);
   }
+
 
   /* WIN STATE IIFE */
   /* Handle checks for winning move */
@@ -431,6 +436,7 @@ const gameState = (function () {
     init,
     getPlayers,
     addPlayers,
+    resetPlayers,
     start,
   }
 })();
@@ -446,7 +452,7 @@ const gameSession = (function () {
   const buttons = document.querySelector('.buttons');
   const addPlayersForm = document.querySelector('#add-players');
   const submitForm = addPlayersForm.querySelector('button');
-  const players = [];
+  let players = []
 
   const init = function () {
     submitForm.addEventListener('click', addPlayers);
@@ -466,14 +472,16 @@ const gameSession = (function () {
 
   const addPlayers = function (event) {
     if (!checkRequired()) {
-      event.preventDefault()
+      event.preventDefault();
       const data = new FormData(addPlayersForm);
       const names = data.getAll('name');
       const markers = data.getAll('marker');
 
       const playerOne = playerFactory(markers[0], names[0]);
       const playerTwo = playerFactory(markers[1], names[1]);
-      players.push(playerOne, playerTwo);
+      const arr = [playerOne, playerTwo]
+      players = [...arr];
+      console.log(players);
 
       hideBoard();
       play();
@@ -489,6 +497,14 @@ const gameSession = (function () {
     restart();
     hideBoard();
     buttons.classList.add('hidden');
+
+    scoreBoardElm.children[0].textContent = '';
+    gameState.resetPlayers();
+    resetPlayers();
+  }
+
+  const resetPlayers = function () {
+    players = new Array();
   }
 
   const hideBoard = function () {
