@@ -19,7 +19,7 @@ body {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 .app {
@@ -60,7 +60,6 @@ body {
   transition: 0.1s ease-in;
   opacity: 0;
 }
-
 
 .scoreboard {
   width: 100%;

@@ -445,23 +445,36 @@ const gameState = (function () {
 ********************************/
 const gameSession = (function () {
   let scoreBoardElm = document.querySelector('.scoreboard');
+  const buttons = document.querySelector('.buttons');
+  const addPlayersForm = document.querySelector('#add-players');
+  const submitForm = addPlayersForm.querySelector('button');
+  const players = [];
 
-  const init = function (players, size = 3) {
-    play();
+  const init = function () {
+    submitForm.addEventListener('click', addPlayers);
   }
 
   const play = function () {
-    const one = playerFactory('x', 'Hunter');
-    const two = playerFactory('o', 'Karma');
-    const players = [one, two];
-    gameBoard.init(3);
+    gameBoard.init();
     gameState.init(gameBoard, players);
     gameState.start();
   }
 
+  const addPlayers = function (event) {
+    event.preventDefault()
+    const data = new FormData(addPlayersForm);
+    const names = data.getAll('name');
+    const markers = data.getAll('marker');
 
-  const addPlayers = function () {
+    const playerOne = playerFactory(markers[0], names[0]);
+    const playerTwo = playerFactory(markers[1], names[1]);
+    players.push(playerOne, playerTwo);
 
+    gameBoard.getApp().classList.toggle('hidden');
+    addPlayersForm.parentElement.classList.toggle('hidden');
+    buttons.classList.toggle('hidden');
+
+    play();
   }
 
   const getScoreBoard = function () {
@@ -475,4 +488,4 @@ const gameSession = (function () {
   }
 })();
 
-gameSession.play();
+gameSession.init();
